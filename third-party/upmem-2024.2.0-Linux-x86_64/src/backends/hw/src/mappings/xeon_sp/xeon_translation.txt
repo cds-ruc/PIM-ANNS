@@ -1,0 +1,220 @@
+__API_SYMBOL__ void
+fifo_read_from_rank(void **ptr,
+                    uint64_t *base_region_addr,
+                    uint32_t offset,
+                    uint32_t size,
+                    uint8_t dpu_id_start,
+                    uint8_t dpu_id_stop,
+                    uint32_t data_id_start,
+                    __attribute__((unused)) uint32_t data_id_stop)
+{
+
+    uint64_t cache_line[NB_REAL_CIS], cache_line_interleave[NB_REAL_CIS];
+    uint8_t idx, ci_id, dpu_id, nb_cis;
+    uint32_t size_transfer = data_id_stop ? data_id_stop - data_id_start : size;
+    __attribute__((unused)) int chip_id = 0;
+
+    nb_cis = 8;
+
+    if (!size_transfer)
+        return;
+
+    data_id_start /= sizeof(uint64_t);
+
+    /* Works only for transfers of same size and same offset on the
+     * same line
+     */
+    FOREACH_DPU_MULTITHREAD(dpu_id, idx, dpu_id_start, dpu_id_stop)
+    {
+        uint8_t *ptr_dest = (uint8_t *)base_region_addr + BANK_START(dpu_id);
+        uint32_t i;
+        bool do_dpu_transfer = false;
+    
+
+        for (ci_id = 0; ci_id < nb_cis; ++ci_id)
+        {
+            if (ptr[idx + ci_id])
+            {
+                do_dpu_transfer = true;
+                break;
+            }
+        }
+
+        if (!do_dpu_transfer)
+            continue;
+        __builtin_ia32_mfence();
+
+        for (i = data_id_start; i < data_id_start + size_transfer / sizeof(uint64_t); ++i)
+        {
+            uint32_t mram_64_bit_word_offset = apply_address_translation_on_mram_offset(i * 8 + offset) / 8;
+            uint64_t next_data = BANK_OFFSET_NEXT_DATA(mram_64_bit_word_offset * sizeof(uint64_t));
+            uint64_t offset = (next_data % BANK_CHUNK_SIZE) + (next_data / BANK_CHUNK_SIZE) * BANK_NEXT_CHUNK_OFFSET;
+
+            /* Invalidates possible prefetched cache line or old cache line */
+            __builtin_ia32_clflushopt((uint8_t *)ptr_dest + offset);
+        }
+
+        __builtin_ia32_mfence();
+
+        for (i = data_id_start; i < data_id_start + size_transfer / sizeof(uint64_t); ++i)
+        {
+            uint32_t mram_64_bit_word_offset = apply_address_translation_on_mram_offset(i * 8 + offset) / 8;
+            uint64_t next_data = BANK_OFFSET_NEXT_DATA(mram_64_bit_word_offset * sizeof(uint64_t));
+            uint64_t offset = (next_data % BANK_CHUNK_SIZE) + (next_data / BANK_CHUNK_SIZE) * BANK_NEXT_CHUNK_OFFSET;
+
+            cache_line[0] = *((volatile uint64_t *)((uint8_t *)ptr_dest + offset + 0 * sizeof(uint64_t)));
+            cache_line[1] = *((volatile uint64_t *)((uint8_t *)ptr_dest + offset + 1 * sizeof(uint64_t)));
+            cache_line[2] = *((volatile uint64_t *)((uint8_t *)ptr_dest + offset + 2 * sizeof(uint64_t)));
+            cache_line[3] = *((volatile uint64_t *)((uint8_t *)ptr_dest + offset + 3 * sizeof(uint64_t)));
+            cache_line[4] = *((volatile uint64_t *)((uint8_t *)ptr_dest + offset + 4 * sizeof(uint64_t)));
+            cache_line[5] = *((volatile uint64_t *)((uint8_t *)ptr_dest + offset + 5 * sizeof(uint64_t)));
+            cache_line[6] = *((volatile uint64_t *)((uint8_t *)ptr_dest + offset + 6 * sizeof(uint64_t)));
+            cache_line[7] = *((volatile uint64_t *)((uint8_t *)ptr_dest + offset + 7 * sizeof(uint64_t)));
+
+            for (ci_id = 0; ci_id < nb_cis; ++ci_id)
+            {
+                if (ptr[idx + ci_id])
+                {
+                    chip_id = ci_id;
+                }
+            }
+
+            byte_interleave_avx512(cache_line, cache_line_interleave, false);
+            // just_one_chip_byte_interleave_avx512(cache_line, cache_line_interleave, chip_id);
+
+            for (ci_id = 0; ci_id < nb_cis; ++ci_id)
+            {
+                if (ptr[idx + ci_id])
+                {
+                    *((uint64_t *)ptr[idx + ci_id] + i) = cache_line_interleave[ci_id];
+                }
+            }
+        }
+
+        __builtin_ia32_mfence();
+
+        for (i = data_id_start; i < data_id_start + size_transfer / sizeof(uint64_t); ++i)
+        {
+            uint32_t mram_64_bit_word_offset = apply_address_translation_on_mram_offset(i * 8 + offset) / 8;
+            uint64_t next_data = BANK_OFFSET_NEXT_DATA(mram_64_bit_word_offset * sizeof(uint64_t));
+            uint64_t offset = (next_data % BANK_CHUNK_SIZE) + (next_data / BANK_CHUNK_SIZE) * BANK_NEXT_CHUNK_OFFSET;
+
+            __builtin_ia32_clflushopt((uint8_t *)ptr_dest + offset);
+        }
+    }
+
+    __builtin_ia32_mfence();
+}
+
+
+__API_SYMBOL__ void
+fifo_write_to_rank(void **ptr,
+                   uint64_t *base_region_addr,
+                   uint32_t offset,
+                   uint32_t size,
+                   uint8_t dpu_id_start,
+                   uint8_t dpu_id_stop,
+                   uint32_t data_id_start,
+                   __attribute__((unused)) uint32_t data_id_stop)
+{
+    // printf("begin fifo_write_to_rank, dpu_id_start = %d, dpu_id_stop = %d, data_id_start = %d, data_id_stop = %d\n", dpu_id_start, dpu_id_stop, data_id_start, data_id_stop);
+
+    uint64_t cache_line[NB_REAL_CIS];
+    uint8_t idx, ci_id, dpu_id, nb_cis;
+    uint32_t size_transfer = size;
+    __attribute__((unused)) int chip_id = 0;
+
+    nb_cis = 8;
+
+    if (!size_transfer)
+        return;
+
+    data_id_start /= sizeof(uint64_t);
+
+    /* Works only for transfers:
+     * - of same size and same offset on the same line
+     * - size and offset are aligned on 8B
+     */
+    FOREACH_DPU_MULTITHREAD(dpu_id, idx, dpu_id_start, dpu_id_stop)
+    {
+        uint32_t i;
+        uint8_t *ptr_dest = (uint8_t *)base_region_addr + BANK_START(dpu_id);
+        bool do_dpu_transfer = false;
+
+        for (ci_id = 0; ci_id < nb_cis; ++ci_id)
+        {
+            if (ptr[idx + ci_id])
+            {
+                do_dpu_transfer = true;
+                break;
+            }
+        }
+
+        if (!do_dpu_transfer)
+            continue;
+
+        for (i = data_id_start; i < data_id_start + size_transfer / sizeof(uint64_t); ++i)
+        {
+            uint32_t mram_64_bit_word_offset = apply_address_translation_on_mram_offset(i * 8 + offset) / 8;
+            uint64_t next_data = BANK_OFFSET_NEXT_DATA(mram_64_bit_word_offset * sizeof(uint64_t));
+            uint64_t offset = (next_data % BANK_CHUNK_SIZE) + (next_data / BANK_CHUNK_SIZE) * BANK_NEXT_CHUNK_OFFSET;
+
+            for (ci_id = 0; ci_id < nb_cis; ++ci_id)
+            {
+                if (ptr[idx + ci_id])
+                {
+                    cache_line[ci_id] = *((uint64_t *)ptr[idx + ci_id] + i);
+                    chip_id = ci_id;
+                }
+            }
+
+            byte_interleave_avx512(cache_line, (uint64_t *)((uint8_t *)ptr_dest + offset), true);
+            // just_one_chip_byte_interleave_avx512(cache_line, (uint64_t *)((uint8_t *)ptr_dest + offset), chip_id);
+        }
+    }
+
+    __builtin_ia32_mfence();
+
+    /* Here we use non-temporal stores. These stores are "write-combining" and bypass the CPU cache,
+     * so using them does not require a flush. The mfence instruction ensures the stores have reached
+     * the system memory.
+     * cf. https://www.usenix.org/system/files/login/articles/login_summer17_07_rudoff.pdf
+     */
+}
+
+
+__API_SYMBOL__ void byte_interleave_avx512(uint64_t *input, uint64_t *output, bool use_stream)
+{
+    __m512i load = _mm512_loadu_si512(input);
+
+    // LEVEL 0
+    __m512i vindex = _mm512_setr_epi32(0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15);
+    __m512i gathered = _mm512_permutexvar_epi32(vindex, load);
+
+    // LEVEL 1
+    __m512i mask = _mm512_set_epi64(0x0f0b07030e0a0602ULL,
+                                    0x0d0905010c080400ULL,
+
+                                    0x0f0b07030e0a0602ULL,
+                                    0x0d0905010c080400ULL,
+
+                                    0x0f0b07030e0a0602ULL,
+                                    0x0d0905010c080400ULL,
+
+                                    0x0f0b07030e0a0602ULL,
+                                    0x0d0905010c080400ULL);
+
+    __m512i transpose = _mm512_shuffle_epi8(gathered, mask);
+
+    // LEVEL 2
+    __m512i perm = _mm512_setr_epi32(0, 4, 1, 5, 2, 6, 3, 7, 8, 12, 9, 13, 10, 14, 11, 15);
+    __m512i final = _mm512_permutexvar_epi32(perm, transpose);
+
+    if (use_stream)
+    {
+        _mm512_stream_si512((void *)output, final);
+        return;
+    }
+
+    _mm512_storeu_si512((void *)output, final);
+}

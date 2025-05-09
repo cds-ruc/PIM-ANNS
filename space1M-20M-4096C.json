@@ -1,0 +1,8 @@
+{
+    "MAX_CLUSTER": 4096,
+    "RESULT_DIR": "SPACE1M20M4096_DIR",
+    "INDEX_PATH": "/mnt/optane/wpq/dataset/space/index/space1M_M20_PQ8_C4096_R_L2.faissindex",
+    "QUERY_PATH": "/mnt/optane/wpq/dataset/space/query10K.i8bin",
+    "HISTORY_QUERY_PATH": "/mnt/optane/wpq/dataset/space/query10K.i8bin",
+    "GROUNDTRUTH_PATH": "/mnt/optane/wpq/dataset/space/space1B_L2_gt_k100.bin"
+}

@@ -1,0 +1,23 @@
+DPU, ENABLE_REPLICA=0, nprobe=4, qps=1499.00
+DPU, ENABLE_REPLICA=1, nprobe=4, qps=3166.00
+Batch DPU, nprobe=4, qps=1322.00
+DPU, ENABLE_REPLICA=0, nprobe=5, qps=1234.00
+DPU, ENABLE_REPLICA=1, nprobe=5, qps=2657.00
+Batch DPU, nprobe=5, qps=1151.00
+DPU, ENABLE_REPLICA=0, nprobe=8, qps=796.00
+DPU, ENABLE_REPLICA=1, nprobe=8, qps=1774.00
+Batch DPU, nprobe=8, qps=825.00
+DPU, ENABLE_REPLICA=0, nprobe=11, qps=608.00
+DPU, ENABLE_REPLICA=1, nprobe=11, qps=1305.00
+Batch DPU, nprobe=11, qps=638.00
+DPU, ENABLE_REPLICA=0, nprobe=21, qps=97.00
+DPU, ENABLE_REPLICA=1, nprobe=21, qps=692.00
+Batch DPU, nprobe=21, qps=361.00
+DPU, ENABLE_REPLICA=0, nprobe=71, qps=97.00
+DPU, ENABLE_REPLICA=1, nprobe=71, qps=203.00
+Batch DPU, nprobe=71, qps=103.00
+latency breakdown: Cluster_filtering, LUT_construct, Task_construct, Copy_data, merge, Distance_computation, Identifying_TopK
+CPU, 0.015278, 0.000000, 0, 0, 0, 257.492132, 28.610237
+DPU, ENABLE_REPLICA=1, 0.027829, 0.183028, 0.000000, 0.017177, 0.000000, 140.775615, 15.641736
+DPU, ENABLE_REPLICA=0, 0.187708, 0.643688, 0.000212, 0.056423, 0.000000, 194.673940, 21.630438
+Batch DPU, 108.000000, 323.000000, 518.000000, 132.000000, 6.250000, 892.125000, 99.125000

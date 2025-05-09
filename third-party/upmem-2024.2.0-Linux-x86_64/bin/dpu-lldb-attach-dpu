@@ -1,0 +1,8 @@
+#!/bin/bash
+DPU_LLDB_DIR="$(dirname "$0")"
+"${DPU_LLDB_DIR}/lldb" --source-quietly \
+                      --source-before-file "${DPU_LLDB_DIR}/../share/upmem/lldb/lldb_init_dpu_commands" \
+                      --one-line "breakpoint set -n breakpoint_fct" \
+                      --one-line "process launch" \
+                      --one-line "dpu_attach $1" \
+                      -- "${DPU_LLDB_DIR}/../share/upmem/lldb/host-lldb-attach-dpu" "$@"

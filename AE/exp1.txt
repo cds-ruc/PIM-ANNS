@@ -1,0 +1,36 @@
+SIFT, DPU, nprobe=6, qps=1322.00
+SIFT, Batch DPU, nprobe=6, qps=610.00
+SIFT, CPU, nprobe=6, qps=253.00
+SIFT, DPU, nprobe=7, qps=1216.00
+SIFT, Batch DPU, nprobe=7, qps=537.00
+SIFT, CPU, nprobe=7, qps=217.00
+SIFT, DPU, nprobe=9, qps=969.00
+SIFT, Batch DPU, nprobe=9, qps=446.00
+SIFT, CPU, nprobe=9, qps=176.00
+SIFT, DPU, nprobe=11, qps=855.00
+SIFT, Batch DPU, nprobe=11, qps=364.00
+SIFT, CPU, nprobe=11, qps=149.00
+SIFT, DPU, nprobe=15, qps=643.00
+SIFT, Batch DPU, nprobe=15, qps=276.00
+SIFT, CPU, nprobe=15, qps=115.00
+SIFT, DPU, nprobe=24, qps=424.00
+SIFT, Batch DPU, nprobe=24, qps=168.00
+SIFT, CPU, nprobe=24, qps=76.00
+SPACE, DPU, nprobe=4, qps=3243.00
+SPACE, Batch DPU, nprobe=4, qps=1354.00
+SPACE, CPU, nprobe=4, qps=301.00
+SPACE, DPU, nprobe=5, qps=2618.00
+SPACE, Batch DPU, nprobe=5, qps=1155.00
+SPACE, CPU, nprobe=5, qps=254.00
+SPACE, DPU, nprobe=8, qps=1781.00
+SPACE, Batch DPU, nprobe=8, qps=815.00
+SPACE, CPU, nprobe=8, qps=182.00
+SPACE, DPU, nprobe=11, qps=1318.00
+SPACE, Batch DPU, nprobe=11, qps=635.00
+SPACE, CPU, nprobe=11, qps=143.00
+SPACE, DPU, nprobe=21, qps=698.00
+SPACE, Batch DPU, nprobe=21, qps=360.00
+SPACE, CPU, nprobe=21, qps=87.00
+SPACE, DPU, nprobe=71, qps=207.00
+SPACE, Batch DPU, nprobe=71, qps=106.00
+SPACE, CPU, nprobe=71, qps=34.00

@@ -1,0 +1,8 @@
+{
+    "MAX_CLUSTER": 4096,
+    "RESULT_DIR": "SIFT1B32M4096_DIR",
+    "INDEX_PATH": "/mnt/optane/wpq/dataset/sift/index/sift1B_M32_PQ8_C4096_R_L2.faissindex",
+    "QUERY_PATH": "/mnt/optane/wpq/dataset/sift/query.public.10K.u8bin",
+    "HISTORY_QUERY_PATH": "/mnt/optane/wpq/dataset/sift/query.public.10K.u8bin",
+    "GROUNDTRUTH_PATH": "/mnt/optane/wpq/dataset/sift/sift1B_L2_gt_k100.bin"
+}

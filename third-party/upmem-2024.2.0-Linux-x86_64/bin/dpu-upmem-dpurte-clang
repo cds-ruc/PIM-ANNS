@@ -1,0 +1,24 @@
+#!/bin/bash
+
+
+if [ -z ${DPU_ARCH_VERSION+x} ];
+then
+    DPU_CHIP_ID_FILE="/sys/class/dpu_rank/dpu_rank0/dpu_chip_id"
+    if [ -f "${DPU_CHIP_ID_FILE}" ];
+    then
+	PLATFORM_ID=`cat ${DPU_CHIP_ID_FILE}`
+	if (("$PLATFORM_ID" > 8))
+	then
+	    export DPU_ARCH_VERSION="v1B"
+	fi
+    fi
+fi
+
+# No DPU detected, force to v1A
+if [ -z ${DPU_ARCH_VERSION+x} ];
+then
+    export DPU_ARCH_VERSION="v1A"
+fi
+
+DPU_CLANG_DIR="$(dirname "$0")"
+"${DPU_CLANG_DIR}/clang" --target=dpu-upmem-dpurte -mcpu="${DPU_ARCH_VERSION}" -g "$@"

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export DPU_ARCH_VERSION=v1B
+export UPMEM_PROFILE="chipId=0x42"
+echo "Setting DPU_ARCH_VERSION to $DPU_ARCH_VERSION and UPMEM_PROFILE to $UPMEM_PROFILE"
