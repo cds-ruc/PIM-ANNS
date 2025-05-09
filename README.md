@@ -4,6 +4,15 @@ Welcome to the artifact repository of ATC'25 accepted paper: PIMANN: Turbocharge
 
 Should there be any questions, please contact the authors in HotCRP. The authors will respond to each question within 24hrs and as soon as possible.
 
+## Main Claims
+
+Main Claim 1: PIMANN Outperforms Existing ANNS Systems in Throughput, Latency, and Cost Efficiency
+
+Main Claim 2: PIMANN Overcomes Batch Scheduling Limitations via Fine-Grained Per-PU Scheduling
+
+Main Claim 3: PIMANN’s Techniques Synergistically Improve Performance 
+
+
 ## Environment Setup
 
 **To artifact reviewers:** please skip this section and go to "[Evaluate the Artifact](#evaluate-the-Artifact)".
@@ -128,7 +137,7 @@ python3 plot.py help
 ```
 
 
-## Main Claims
+## Detailed Claims
 
 ### **Main Claim 1: PIMANN Outperforms Existing ANNS Systems in Throughput, Latency, and Cost Efficiency**  
 **Sub-claims**:  
