@@ -74,7 +74,7 @@ add_custom_target(dpu_adc_code
     SOURCES  ${COMMON_SOURCES} ${DPU_UTIL_SOURCES}
 )
 
-# 在 CMakeLists.txt 中定义项目根目录宏
+
 add_definitions(-DPROJECT_SOURCE_DIR=\"${CMAKE_SOURCE_DIR}\")
 
 add_subdirectory(third-party/faiss_upmem)

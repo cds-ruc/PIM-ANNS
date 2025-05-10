@@ -112,7 +112,7 @@ float *read_query(
     }
     else {
         fprintf(stderr, "Error: Invalid type %d\n", type);
-        return nullptr;  // 明确返回空指针
+        return nullptr;  
     }
 }
 
