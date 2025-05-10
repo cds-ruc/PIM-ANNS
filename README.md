@@ -16,7 +16,7 @@ Main Claim 3: PIMANN’s Techniques Synergistically Improve Performance
 ## Environment Setup
 
 **To artifact reviewers:** please skip this section and go to "[Evaluate the Artifact](#evaluate-the-Artifact)".
-This is because have already set up the required environment on the provided platform.
+This is because we have already set up the required environment on the provided platform.
 
 ### Prerequisites
 - Hardware Requirements: To run this project, UPMEM hardware is required.  https://www.upmem.com/
@@ -25,7 +25,8 @@ This is because have already set up the required environment on the provided pla
 cd third-party/upmem-2024.2.0-Linux-x86_64/src/backends
 bash ./install.sh
 ```
-- FAISS_UPMEM: The IVFPQ index algorithm reuses portions of the FAISS codebase. For better UPMEM compatibility, we provide a modified version of FAISS based on: https://github.com/facebookresearch/faiss. Installation method is the same as FAISS.
+- FAISS: The IVFPQ index algorithm reuses portions of the FAISS codebase. For better UPMEM compatibility, we provide a modified version of FAISS based on: https://github.com/facebookresearch/faiss. Installation method is the same as FAISS.
+
 - Boost Coroutine: This project utilizes Boost's coroutine library.
 ```
 sudo apt-get update
@@ -36,6 +37,8 @@ sudo apt-get install libboost-coroutine-dev
 ## Evaluate the Artifact
 
 ### We have a server ready for AE
+
+
 
 ```
 ssh -p 12853 wupuqing@44be1613b0de8118.natapp.cc
@@ -84,14 +87,26 @@ We have prepared 9 scripts that run different experiments to reproduce all figur
 The all-in-one script simply invocates them one by one.
 If you want to run individual experiments, please refer to these script files and the comments in them (which describes the relationship between experiments and figures/tables). Estimated operating hours are as follows:
 
-- EXP1: about 1.5 hours
-- EXP2: about 1.5 hours
-- EXP3: about 1.5 hours
-- EXP4: about 1 hours
-- EXP5: about 0.5 hours
-- EXP6: about 1 hours
-- EXP7: about 0.5 hours
-- EXP8: about 0.2 hours
+
+<!-- EXP1: Overall throughput about 1.5 hours
+EXP2: End-to-end latency about 1.5 hours
+EXP3: PIM utilization about 1.5 hours 
+EXP4: Coroutine-based bus ownership switching about 1 hours
+EXP5: Effect of selective replication about 0.5 hours
+EXP6: Contributions of individual techniques. about 1 hours
+EXP7: Comparison with Faiss-GPU about 0.5 hours
+EXP8: Cost efficiency about 0.2 hours-->
+
+| Experiment | Description                                | Duration (hours) |
+|------------|--------------------------------------------|------------------|
+| EXP1       | Overall throughput                         | 1.5              |
+| EXP2       | End-to-end latency                         | 1.5              |
+| EXP3       | PIM utilization                            | 1.5              |
+| EXP4       | Coroutine-based bus ownership switching    | 1.0              |
+| EXP5       | Effect of selective replication            | 0.5              |
+| EXP6       | Contributions of individual techniques     | 1.0              |
+| EXP7       | Comparison with Faiss-GPU                  | 0.5              |
+| EXP8       | Cost efficiency                            | 0.2              |
 
 
 ### Plot the figures & tables
@@ -106,8 +121,21 @@ Please activate the virtual environment (.venv/bin/python)
 source .venv/bin/activate
 ```
 
+
+
 Then, you can run each cell from top to bottom.
-Each other cell plots a figure or table.
+Each cell will plot a figure or table like below.
+Titles of these figures and tables are consistent with those in the paper.
+
+
+<img src="figures/results1.png" alt="Throughput comparison" width="500">
+
+
+The command above will plot all figures and tables by default, and the results will be stored in the AE/figures directory.
+So, please ensure that you have finished running the all-in-one AE script before running the plotter.
+
+<img src="figures/results.png" alt="Throughput comparison" width="500">
+
 
 #### For others
 
@@ -135,6 +163,8 @@ Please refer to `plot.py` for accepted arguments.
 ```
 python3 plot.py help
 ```
+
+
 
 
 ## Detailed Claims
