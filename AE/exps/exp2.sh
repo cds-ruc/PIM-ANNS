@@ -39,22 +39,37 @@ cd "$PROJECT_ROOT/build"
 
 path_common="$PROJECT_ROOT/common/dataset.h"
 
+# init config
+sed -i \
+    -e "s|#define SLOT_L.*|#define SLOT_L 100000|" \
+    -e "s|#define MAX_COROUTINE.*|#define MAX_COROUTINE 4|" \
+    -e "s|#define COPY_RATE.*|#define COPY_RATE 10|" \
+    -e "s|#define ENABLE_REPLICA.*|#define ENABLE_REPLICA 1|" \
+    -e "s|#define CHANGE_MAX_COROUTINE 0.*|#define CHANGE_MAX_COROUTINE 0|" \
+    -e "s|#define CHANGE_COPY_RATE 0.*|#define CHANGE_COPY_RATE 0|" \
+    -e "s|#define CHANGE_ENABLE_REPLICA 0.*|#define CHANGE_ENABLE_REPLICA 0|" \
+    -e "s|#define ENABLE_DPU_LOAD.*|#define ENABLE_DPU_LOAD 0|" \
+    $path_common
+
 
 # ======================= #EXP1 + #EXP2 + #EXP3 ================================
 
 run_single_command() {
     local cmd="$1"
+    local max_test=10
+    local i=0
     local exit_code=0
     
-    while true; do
-        date +"%Y-%m-%d %H:%M:%S"
+    while [ $i -lt $max_test ]; do
         timeout 30m $cmd
         exit_code=$?
-        
         if [ $exit_code -eq 0 ]; then
             return 0
         fi
+        i=$((i + 1))  
     done
+
+    return $exit_code
 }
 
 

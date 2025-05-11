@@ -1533,10 +1533,7 @@ void DPUWrapper::level2_search(
                         }
                         // timer4.end();
 
-                        end = std::chrono::high_resolution_clock::now(); 
-                        duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-                        xmh::PerfCounter::Record("Copy data", duration.count());
+                       
 
                         xmh::Timer timer3("   wram to dpu");
 
@@ -1569,6 +1566,11 @@ void DPUWrapper::level2_search(
                         mtx_input_link_rankid[rank_id].unlock();
 
                         timer3.end();
+
+                        end = std::chrono::high_resolution_clock::now(); 
+                        duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+                        xmh::PerfCounter::Record("Copy data", duration.count());
                     }
 
                     cluster->pair_shard_info[j].rw_mutex.unlock_shared();
