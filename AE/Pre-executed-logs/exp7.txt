@@ -1,0 +1,12 @@
+nprobe: 4, DPU QPS: 3205.00, GPU QPS: 1279.75
+nprobe: 4, DPU QPS per Watt: 6.9372, GPU QPS per Watt: 4.2658
+nprobe: 5, DPU QPS: 2617.00, GPU QPS: 1146.00
+nprobe: 5, DPU QPS per Watt: 5.6645, GPU QPS per Watt: 3.8200
+nprobe: 8, DPU QPS: 1780.00, GPU QPS: 909.67
+nprobe: 8, DPU QPS per Watt: 3.8528, GPU QPS per Watt: 3.0322
+nprobe: 11, DPU QPS: 1313.00, GPU QPS: 629.17
+nprobe: 11, DPU QPS per Watt: 2.8420, GPU QPS per Watt: 2.0972
+nprobe: 21, DPU QPS: 695.00, GPU QPS: 370.21
+nprobe: 21, DPU QPS per Watt: 1.5043, GPU QPS per Watt: 1.2340
+nprobe: 71, DPU QPS: 203.00, GPU QPS: 103.32
+nprobe: 71, DPU QPS per Watt: 0.4394, GPU QPS per Watt: 0.3444

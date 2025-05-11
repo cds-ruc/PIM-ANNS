@@ -1,0 +1,24 @@
+SIFT, DPU, nprobe=6, avg_active_rate=0.68
+SIFT, Batch DPU, nprobe=6, avg_active_rate=0.18
+SIFT, DPU, nprobe=7, avg_active_rate=0.73
+SIFT, Batch DPU, nprobe=7, avg_active_rate=0.21
+SIFT, DPU, nprobe=9, avg_active_rate=0.75
+SIFT, Batch DPU, nprobe=9, avg_active_rate=0.22
+SIFT, DPU, nprobe=11, avg_active_rate=0.77
+SIFT, Batch DPU, nprobe=11, avg_active_rate=0.21
+SIFT, DPU, nprobe=15, avg_active_rate=0.79
+SIFT, Batch DPU, nprobe=15, avg_active_rate=0.21
+SIFT, DPU, nprobe=24, avg_active_rate=0.83
+SIFT, Batch DPU, nprobe=24, avg_active_rate=0.21
+SPACE, DPU, nprobe=4, avg_active_rate=0.74
+SPACE, Batch DPU, nprobe=4, avg_active_rate=0.18
+SPACE, DPU, nprobe=5, avg_active_rate=0.76
+SPACE, Batch DPU, nprobe=5, avg_active_rate=0.19
+SPACE, DPU, nprobe=8, avg_active_rate=0.78
+SPACE, Batch DPU, nprobe=8, avg_active_rate=0.21
+SPACE, DPU, nprobe=11, avg_active_rate=0.80
+SPACE, Batch DPU, nprobe=11, avg_active_rate=0.22
+SPACE, DPU, nprobe=21, avg_active_rate=0.82
+SPACE, Batch DPU, nprobe=21, avg_active_rate=0.23
+SPACE, DPU, nprobe=71, avg_active_rate=0.83
+SPACE, Batch DPU, nprobe=71, avg_active_rate=0.23

@@ -1,0 +1,18 @@
+DPU, nprobe=4, average_latency=83.29, tail_latency=212.77
+Batch DPU, nprobe=4, average_latency=765.20, tail_latency=816.00 
+CPU, nprobe=4, average_latency=131.86, tail_latency=568.00
+DPU, nprobe=5, average_latency=93.78, tail_latency=244.48
+Batch DPU, nprobe=5, average_latency=873.70, tail_latency=915.00 
+CPU, nprobe=5, average_latency=158.50, tail_latency=609.00
+DPU, nprobe=8, average_latency=127.60, tail_latency=341.50
+Batch DPU, nprobe=8, average_latency=1216.20, tail_latency=1279.00 
+CPU, nprobe=8, average_latency=220.44, tail_latency=713.00
+DPU, nprobe=11, average_latency=154.53, tail_latency=432.29
+Batch DPU, nprobe=11, average_latency=1573.30, tail_latency=1668.00 
+CPU, nprobe=11, average_latency=276.06, tail_latency=686.00
+DPU, nprobe=21, average_latency=256.90, tail_latency=632.57
+Batch DPU, nprobe=21, average_latency=2758.40, tail_latency=2835.00 
+CPU, nprobe=21, average_latency=459.67, tail_latency=819.00
+DPU, nprobe=71, average_latency=410.67, tail_latency=887.86
+Batch DPU, nprobe=71, average_latency=9379.70, tail_latency=9881.00 
+CPU, nprobe=71, average_latency=1157.50, tail_latency=1426.00
