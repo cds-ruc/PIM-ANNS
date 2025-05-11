@@ -41,8 +41,20 @@ path_common="$PROJECT_ROOT/common/dataset.h"
 
 # ======================= #EXP1 + #EXP2 + #EXP3 ================================
 
-# Global variable to track overall success (0 means all success, 1 means at least one failure)
-ALL_TESTS_SUCCESS=0
+run_single_command() {
+    local cmd="$1"
+    local exit_code=0
+    
+    while true; do
+        date +"%Y-%m-%d %H:%M:%S"
+        timeout 30m $cmd
+        exit_code=$?
+        
+        if [ $exit_code -eq 0 ]; then
+            return 0
+        fi
+    done
+}
 
 macro0_values=("sift1B-32M-4096C.json" "space1B-20M-4096C.json")
 macro1_values=("#define TEST_DPU" "#define TEST_CPU" "#define TEST_BATCH_DPU")
@@ -74,17 +86,10 @@ for m0 in "${macro0_values[@]}"; do
             
             for np in "${nprobe[@]}"; do
                 date +"%Y-%m-%d %H:%M:%S"
-                timeout 30m ./main $np
-                exit_code=$?
-                if [ $exit_code -eq 124 ]; then
-                    echo "The command ./main $np timed out after 30 minutes. Skipping..."
-                    ALL_TESTS_SUCCESS=1
-                elif [ $exit_code -ne 0 ]; then
-                    echo "The command ./main $np failed with error code $exit_code."
-                    ALL_TESTS_SUCCESS=1
-                else
-                    echo "The command ./main $np completed successfully."
-                fi
+                run_single_command "./main $np"
+                
+                echo "The command ./main $np completed successfully."
+                
             done
             
         elif [[ ${m0} == "space1B-20M-4096C.json" ]]; then
@@ -111,17 +116,10 @@ for m0 in "${macro0_values[@]}"; do
 
                 
                 date +"%Y-%m-%d %H:%M:%S"
-                timeout 30m ./main $np
-                exit_code=$?
-                if [ $exit_code -eq 124 ]; then
-                    echo "The command ./main $np timed out after 30 minutes. Skipping..."
-                    ALL_TESTS_SUCCESS=1
-                elif [ $exit_code -ne 0 ]; then
-                    echo "The command ./main $np failed with error code $exit_code."
-                    ALL_TESTS_SUCCESS=1
-                else
-                    echo "The command ./main $np completed successfully."
-                fi
+                run_single_command "./main $np"
+                
+                echo "The command ./main $np completed successfully."
+                
 
                 if [[ $np -eq 71 ]]; then
                     sed -i -e "s/#define MAX_COROUTINE.*/#define MAX_COROUTINE 4/" $path_common
@@ -132,13 +130,7 @@ for m0 in "${macro0_values[@]}"; do
     done
 done
 
-# Print final status
-if [ $ALL_TESTS_SUCCESS -eq 0 ]; then
-    echo "All tests completed successfully."
-else
-    echo "Some tests failed, please run exp3.sh again."
-    exit 1
-fi
+
 
 # ======================= 2 PROCESS DATA ==============================
 # =====================================================================
