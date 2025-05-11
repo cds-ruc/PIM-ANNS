@@ -81,9 +81,9 @@ done
 # ======================= #EXP7 GPU ================================
 
 REMOTE_HOST="10.77.110.155"
-REMOTE_USER="wpq"                                                    # replace with your remote hostname
-REMOTE_SCRIPT="/home/wpq/workspace/faiss/faiss/gpu/test/run.sh"      # replace with your remote script path
-REMOTE_OUTPUT_DIR="/home/wpq/workspace/faiss/faiss/gpu/test/GPU_DIR" # replace with your remote output directory path
+REMOTE_USER="wpq"                                                    
+REMOTE_SCRIPT="/home/wpq/workspace/faiss/faiss/gpu/test/run.sh"      
+REMOTE_OUTPUT_DIR="/home/wpq/workspace/faiss/faiss/gpu/test/GPU_DIR" 
 LOCAL_OUTPUT_DIR="$PROJECT_ROOT/SPACE1B20M4096_DIR/GPU_DIR"
 
 
