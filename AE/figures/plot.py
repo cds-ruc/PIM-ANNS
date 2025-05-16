@@ -6,6 +6,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
 from matplotlib.table import Table
+import warnings
+warnings.filterwarnings("ignore", message="This figure includes Axes")
+
 
 def exp1():
     """Execute code for EXP1"""
@@ -942,13 +945,6 @@ def exp7():
 
     data = load_exp7_data('../exp7.txt')
     
-    # 
-    print(":")
-    print(f"Recall@10: {data['recalls']}")
-    print(f"GPU QPS: {data['GPU']['QPS']}")
-    print(f"DPU QPS: {data['DPU']['QPS']}")
-    print(f"GPU QPS/W: {data['GPU']['QPSW']}")
-    print(f"DPU QPS/W: {data['DPU']['QPSW']}")
     
     # 
     plot_figure16(data)
@@ -1040,14 +1036,6 @@ def exp8():
 
     # 
     data = load_exp8_data('../exp8.txt')
-    
-    # 
-    print(":")
-    for solution in data:
-        print(f"{solution}:")
-        print(f"  Price: {data[solution]['Price']}")
-        print(f"  QPS: {data[solution]['QPS']}")
-        print(f"  QPS/$: {data[solution]['QPS/$']}")
     
     # 
     plot_table1(data)

@@ -1,0 +1,81 @@
+Running with space1B-20M-4096C.json
+----- Test 1/10 -----
+2025-05-15 11:36:11
+json_path: /home/wupuqing/workspace/PIMANN/config.json
+query path is /mnt/optane/wpq/dataset/space/query10K.i8bin
+query_num: 10000, dim: 100
+searching SPACE1B, nprobe = 4
+The command ./main 4 completed successfully.
+SPACE, DPU, nprobe=4, recall@10=0.84, qps=3259.00, avg_active_rate=0.74
+----- Test 2/10 -----
+2025-05-15 11:38:50
+json_path: /home/wupuqing/workspace/PIMANN/config.json
+query path is /mnt/optane/wpq/dataset/space/query10K.i8bin
+query_num: 10000, dim: 100
+searching SPACE1B, nprobe = 4
+The command ./main 4 completed successfully.
+SPACE, DPU, nprobe=4, recall@10=0.84, qps=3001.00, avg_active_rate=0.71
+----- Test 3/10 -----
+2025-05-15 11:41:10
+json_path: /home/wupuqing/workspace/PIMANN/config.json
+query path is /mnt/optane/wpq/dataset/space/query10K.i8bin
+query_num: 10000, dim: 100
+searching SPACE1B, nprobe = 4
+The command ./main 4 completed successfully.
+SPACE, DPU, nprobe=4, recall@10=0.84, qps=2793.00, avg_active_rate=0.65
+----- Test 4/10 -----
+2025-05-15 11:43:30
+json_path: /home/wupuqing/workspace/PIMANN/config.json
+query path is /mnt/optane/wpq/dataset/space/query10K.i8bin
+query_num: 10000, dim: 100
+searching SPACE1B, nprobe = 4
+The command ./main 4 completed successfully.
+SPACE, DPU, nprobe=4, recall@10=0.84, qps=2894.00, avg_active_rate=0.66
+----- Test 5/10 -----
+2025-05-15 11:45:55
+json_path: /home/wupuqing/workspace/PIMANN/config.json
+query path is /mnt/optane/wpq/dataset/space/query10K.i8bin
+query_num: 10000, dim: 100
+searching SPACE1B, nprobe = 4
+The command ./main 4 completed successfully.
+SPACE, DPU, nprobe=4, recall@10=0.84, qps=3160.00, avg_active_rate=0.72
+----- Test 6/10 -----
+2025-05-15 11:48:31
+json_path: /home/wupuqing/workspace/PIMANN/config.json
+query path is /mnt/optane/wpq/dataset/space/query10K.i8bin
+query_num: 10000, dim: 100
+searching SPACE1B, nprobe = 4
+The command ./main 4 completed successfully.
+SPACE, DPU, nprobe=4, recall@10=0.84, qps=3246.00, avg_active_rate=0.74
+----- Test 7/10 -----
+2025-05-15 11:51:10
+json_path: /home/wupuqing/workspace/PIMANN/config.json
+query path is /mnt/optane/wpq/dataset/space/query10K.i8bin
+query_num: 10000, dim: 100
+searching SPACE1B, nprobe = 4
+The command ./main 4 completed successfully.
+SPACE, DPU, nprobe=4, recall@10=0.84, qps=3278.00, avg_active_rate=0.74
+----- Test 8/10 -----
+2025-05-15 11:53:46
+json_path: /home/wupuqing/workspace/PIMANN/config.json
+query path is /mnt/optane/wpq/dataset/space/query10K.i8bin
+query_num: 10000, dim: 100
+searching SPACE1B, nprobe = 4
+The command ./main 4 completed successfully.
+SPACE, DPU, nprobe=4, recall@10=0.84, qps=3211.00, avg_active_rate=0.74
+----- Test 9/10 -----
+2025-05-15 11:56:19
+json_path: /home/wupuqing/workspace/PIMANN/config.json
+query path is /mnt/optane/wpq/dataset/space/query10K.i8bin
+query_num: 10000, dim: 100
+searching SPACE1B, nprobe = 4
+The command ./main 4 completed successfully.
+SPACE, DPU, nprobe=4, recall@10=0.84, qps=3245.00, avg_active_rate=0.74
+----- Test 10/10 -----
+2025-05-15 11:58:56
+json_path: /home/wupuqing/workspace/PIMANN/config.json
+query path is /mnt/optane/wpq/dataset/space/query10K.i8bin
+query_num: 10000, dim: 100
+searching SPACE1B, nprobe = 4
+The command ./main 4 completed successfully.
+SPACE, DPU, nprobe=4, recall@10=0.84, qps=3059.00, avg_active_rate=0.70
