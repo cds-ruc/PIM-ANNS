@@ -83,7 +83,7 @@ for macro_value in "${macro_values[@]}"; do
     make -j
     make main -j
 
-    nprobe=(11)
+    nprobe=(6 7 9 11 15 24)
     for np in "${nprobe[@]}"; do
         date +"%Y-%m-%d %H:%M:%S"
         run_single_command "./main $np"
@@ -115,7 +115,7 @@ for macro_value in "${macro_values[@]}"; do
     make -j
     make main -j
 
-    nprobe=(11 )
+    nprobe=(6 7 9 11 15 24)
     # nprobe=(11)
     for np in "${nprobe[@]}"; do
         date +"%Y-%m-%d %H:%M:%S"
