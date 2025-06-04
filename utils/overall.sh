@@ -2,7 +2,7 @@
 
 clear
 
-cd /home/wupuqing/workspace/PIMANN/build
+cd /home/wupuqing/workspace/PIM-ANNS/build
 
 
 function run_space() {
@@ -43,7 +43,7 @@ function run_sift(){
 }
 
 
-path_common="/home/wupuqing/workspace/PIMANN/common/dataset.h"
+path_common="/home/wupuqing/workspace/PIM-ANNS/common/dataset.h"
 
 
 

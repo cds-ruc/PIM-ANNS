@@ -10,12 +10,13 @@ SIFT1M16M4096_DIR/
 
 SPACE1M20M4096_DIR/
 
+
 .venv/
 .vscode/
 
 NATAPP/
 log/
 
-
+.cache/
 
 

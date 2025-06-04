@@ -2765,7 +2765,12 @@ void DPUWrapper::thread_fifo_out(const std::vector<int> &rank_id_v, int t_id)
                     auto end = std::chrono::high_resolution_clock::now(); 
                     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
+                    auto duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+
+          
+
                     xmh::PerfCounter::Record("Merge topk", duration.count());
+                    xmh::PerfCounter::Record("merge ns", duration_ns.count());
                 }
             }
         }

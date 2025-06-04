@@ -1,4 +1,4 @@
-PROJECT_ROOT="/home/wupuqing/workspace/PIMANN"
+PROJECT_ROOT="/home/wupuqing/workspace/PIM-ANNS"
 
 
 rm -rf "$PROJECT_ROOT/SPACE1B20M4096_DIR"

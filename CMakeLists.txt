@@ -108,30 +108,3 @@ add_dependencies(dpu_lib batch_dpu_adc_code)
 
 add_executable(main EXCLUDE_FROM_ALL main.cpp)
 target_link_libraries(main PUBLIC dpu_lib)
-
-
-
-
-add_executable(train_sift1B EXCLUDE_FROM_ALL train_sift1B.cpp)
-target_link_libraries(train_sift1B PUBLIC dpu_lib)
-
-add_executable(test EXCLUDE_FROM_ALL test.cpp)
-target_link_libraries(test PUBLIC dpu_lib)
-
-
-add_executable(test_zipf EXCLUDE_FROM_ALL test_zipf.cpp)
-target_link_libraries(test_zipf PUBLIC dpu_lib)
-
-add_executable(generate_query EXCLUDE_FROM_ALL generate_query.cpp)
-target_link_libraries(generate_query PUBLIC dpu_lib)
-
-add_executable(generate_sift1m_from1b EXCLUDE_FROM_ALL generate_sift1m_from1b.cpp)
-target_link_libraries(generate_sift1m_from1b PUBLIC dpu_lib)
-
-add_executable(generate_space1m_from1b EXCLUDE_FROM_ALL generate_space1m_from1b.cpp)
-target_link_libraries(generate_space1m_from1b PUBLIC dpu_lib)
-
-
-# pybind11_add_module(cmake_example pybind_main.cpp)
-
-# target_link_libraries(cmake_example PUBLIC dpu_lib)

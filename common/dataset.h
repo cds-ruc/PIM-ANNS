@@ -1,6 +1,6 @@
 #pragma once
 
-#define TEST_DPU
+#define TEST_CPU
 
 #define MY_PQ_M 20
 

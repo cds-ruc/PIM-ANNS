@@ -1,4 +1,4 @@
-PROJECT_ROOT="/home/wupuqing/workspace/PIMANN"
+PROJECT_ROOT="/home/wupuqing/workspace/PIM-ANNS"
 
 
 rm -rf "$PROJECT_ROOT/SPACE1B20M4096_DIR"
@@ -83,7 +83,7 @@ for macro_value in "${macro_values[@]}"; do
     make -j
     make main -j
 
-    nprobe=(4 5 8 11 21 71)
+    nprobe=(11)
     for np in "${nprobe[@]}"; do
         date +"%Y-%m-%d %H:%M:%S"
         run_single_command "./main $np"
@@ -115,7 +115,7 @@ for macro_value in "${macro_values[@]}"; do
     make -j
     make main -j
 
-    nprobe=(4 5 8 11 21 71)
+    nprobe=(11 )
     # nprobe=(11)
     for np in "${nprobe[@]}"; do
         date +"%Y-%m-%d %H:%M:%S"
@@ -255,14 +255,19 @@ if [ -f "$cpu_file" ]; then
     Copy_data=0
     merge=0
 
-    Distance_computation=$(echo "scale=2; ($latency - $Cluster_filtering - $LUT_construct - $Copy_data - $merge) * 0.9" | bc)
-    Identifying_TopK=$(echo "scale=2; $latency - $Cluster_filtering - $LUT_construct - $Copy_data - $Distance_computation - $merge" | bc)
+    Distance_computation=$(echo "scale=2; ($latency - $Cluster_filtering - $LUT_construct) * 0.9" | bc)
+    Identifying_TopK=$(echo "scale=2; $latency - $Cluster_filtering - $LUT_construct - $Distance_computation" | bc)
 
     echo "CPU, $Cluster_filtering, $LUT_construct, $Task_construct, $Copy_data, $merge, $Distance_computation, $Identifying_TopK" >> "$output_file"
 fi
 
 # extract data from DPU file
 if [ -f "$dpu_file" ]; then
+
+    need_send_num=$(extract_first_float_after_second_pipe "$dpu_file" "need_send_num")
+    need_send_num=${need_send_num:-0}
+
+   
     latency=$(extract_first_float_after_second_pipe "$dpu_file" "latency (ms)")
     latency=${latency:-0}
 
@@ -275,14 +280,16 @@ if [ -f "$dpu_file" ]; then
     Task_construct=$(extract_first_float_after_second_pipe "$dpu_file" "Task construct")
     Task_construct=${Task_construct:-0}
 
-    Copy_data=$(extract_first_float_after_second_pipe "$dpu_file" "Copy data")
-    Copy_data=${Copy_data:-0}
+    Copy_data_sub=$(extract_first_float_after_second_pipe "$dpu_file" "Copy data")
+    Copy_data_sub=${Copy_data_sub:-0}
+    Copy_data=$(echo "scale=6; $Copy_data_sub * $need_send_num" | bc)
+
 
     merge=$(extract_first_float_after_second_pipe "$dpu_file" "Merge topk")
     merge=${merge:-0}
 
-    Distance_computation=$(echo "scale=2; ($latency - $Cluster_filtering - $LUT_construct - $Copy_data - $merge) * 0.9" | bc)
-    Identifying_TopK=$(echo "scale=2; $latency - $Cluster_filtering - $LUT_construct - $Copy_data - $Distance_computation - $merge" | bc)
+    Distance_computation=$(echo "scale=2; ($latency - $Cluster_filtering - $LUT_construct - $Task_construct - $Copy_data - $merge) * 0.9" | bc)
+    Identifying_TopK=$(echo "scale=2; $latency - $Cluster_filtering - $LUT_construct - $Task_construct - $Copy_data - $Distance_computation - $merge" | bc)
 
     echo "DPU, ENABLE_REPLICA=1, $Cluster_filtering, $LUT_construct, $Task_construct, $Copy_data, $merge, $Distance_computation, $Identifying_TopK" >> "$output_file"
 fi
@@ -290,10 +297,6 @@ fi
 
 
 
-
-ratio_Cluster_filtering=0
-ratio_LUT_construct=0
-ratio_Task_construct=0
 
 # extract values from batch_dpu_file
 if [ -f "$batch_dpu_file" ]; then
@@ -309,26 +312,16 @@ if [ -f "$batch_dpu_file" ]; then
     Task_construct=$(extract_first_float_after_second_pipe "$batch_dpu_file" "prepare task")
     Task_construct=${Task_construct:-0}
 
+    Copy_data=$(extract_first_float_after_second_pipe "$batch_dpu_file" "Copy data")
+    Copy_data=${Copy_data:-0}
+
     merge=$(extract_first_float_after_second_pipe "$batch_dpu_file" "merge result")
     merge=${merge:-0}
 
-    DPU_time=$(extract_first_float_after_second_pipe "$batch_dpu_file" "max_dpu_time")
-    DPU_time=${DPU_time:-0}
-
-    Distance_computation=$(echo "scale=6; ($DPU_time) * 0.9" | bc)
-    Identifying_TopK=$(echo "scale=6; $DPU_time - $Distance_computation" | bc)
-
-    Copy_data=$(echo "scale=6; ($latency - $Cluster_filtering - $LUT_construct - $Task_construct - $merge - $DPU_time)" | bc)
-    Copy_data=${Copy_data:-0}
-    Copy_data=$(echo "scale=6; if ($Copy_data < 0) 0 else $Copy_data" | bc)
+    Distance_computation=$(echo "scale=2; ($latency - $Cluster_filtering - $LUT_construct - $Task_construct - $Copy_data - $merge) * 0.9" | bc)
+    Identifying_TopK=$(echo "scale=2; $latency - $Cluster_filtering - $LUT_construct - $Task_construct - $Copy_data - $Distance_computation - $merge" | bc)
 
 
-    total_shared_time=$(echo "scale=6; $Cluster_filtering + $LUT_construct + $Task_construct" | bc)
-    if [ $(echo "$total_shared_time > 0" | bc) -eq 1 ]; then
-        ratio_Cluster_filtering=$(echo "scale=6; $Cluster_filtering / $total_shared_time" | bc)
-        ratio_LUT_construct=$(echo "scale=6; $LUT_construct / $total_shared_time" | bc)
-        ratio_Task_construct=$(echo "scale=6; $Task_construct / $total_shared_time" | bc)
-    fi
 
     echo "Batch DPU, $Cluster_filtering, $LUT_construct, $Task_construct, $Copy_data, $merge, $Distance_computation, $Identifying_TopK" >> "$output_file"
 fi
@@ -342,33 +335,27 @@ if [ -f "$dpu_K_file" ]; then
     latency=$(extract_first_float_after_second_pipe "$dpu_K_file" "latency (ms)")
     latency=${latency:-0}
 
+ 
+    Cluster_filtering=$(extract_first_float_after_second_pipe "$dpu_K_file" "level1_search")
+    Cluster_filtering=${Cluster_filtering:-0}
+
+    LUT_construct=$(extract_first_float_after_second_pipe "$dpu_K_file" "LUT construct")
+    LUT_construct=${LUT_construct:-0}
+
+    Task_construct=$(extract_first_float_after_second_pipe "$dpu_K_file" "Task construct")
+    Task_construct=${Task_construct:-0}
+
     Copy_data_sub=$(extract_first_float_after_second_pipe "$dpu_K_file" "Copy data")
     Copy_data_sub=${Copy_data_sub:-0}
     Copy_data=$(echo "scale=6; $Copy_data_sub * $need_send_num" | bc)
 
+
     merge=$(extract_first_float_after_second_pipe "$dpu_K_file" "Merge topk")
     merge=${merge:-0}
 
-    DPU_time_sub=$(extract_first_float_after_second_pipe "$dpu_K_file" "dpu_time")
-    DPU_time_sub=${DPU_time_sub:-0}
-    DPU_time=$(echo "scale=6; $DPU_time_sub * $need_send_num" | bc)
+    Distance_computation=$(echo "scale=2; ($latency - $Cluster_filtering - $LUT_construct - $Task_construct - $Copy_data - $merge) * 0.9" | bc)
+    Identifying_TopK=$(echo "scale=2; $latency - $Cluster_filtering - $LUT_construct - $Task_construct - $Copy_data - $Distance_computation - $merge" | bc)
 
-    Distance_computation=$(echo "scale=6; ($DPU_time) * 0.9" | bc)
-    Identifying_TopK=$(echo "scale=6; $DPU_time - $Distance_computation" | bc)
-
- 
-    remaining_time=$(echo "scale=6; $latency - $Copy_data - $merge - $DPU_time" | bc)
-    remaining_time=$(echo "scale=6; if ($remaining_time < 0) 0 else $remaining_time" | bc)
-
-
-    Cluster_filtering=$(echo "scale=6; $remaining_time * $ratio_Cluster_filtering" | bc)
-    LUT_construct=$(echo "scale=6; $remaining_time * $ratio_LUT_construct" | bc)
-    Task_construct=$(echo "scale=6; $remaining_time * $ratio_Task_construct" | bc)
-
-   
-    Cluster_filtering=$(echo "scale=6; if ($Cluster_filtering < 0) 0 else $Cluster_filtering" | bc)
-    LUT_construct=$(echo "scale=6; if ($LUT_construct < 0) 0 else $LUT_construct" | bc)
-    Task_construct=$(echo "scale=6; if ($Task_construct < 0) 0 else $Task_construct" | bc)
 
     echo "DPU, ENABLE_REPLICA=0, $Cluster_filtering, $LUT_construct, $Task_construct, $Copy_data, $merge, $Distance_computation, $Identifying_TopK" >> "$output_file"
 fi

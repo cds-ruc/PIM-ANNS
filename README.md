@@ -1,6 +1,6 @@
-# [ATC'25 Artifact] PIMANN: Turbocharge ANNS on Real Processing-in-Memory by Enabling Fine-Grained Per-PIM-Core Scheduling
+# [ATC'25 Artifact] PIM-ANNS: Turbocharge ANNS on Real Processing-in-Memory by Enabling Fine-Grained Per-PIM-Core Scheduling
 
-Welcome to the artifact repository of ATC'25 accepted paper: PIMANN: Turbocharge ANNS on Real Processing-in-Memory by Enabling Fine-Grained Per-PIM-Core Scheduling!
+Welcome to the artifact repository of ATC'25 accepted paper: PIM-ANNS: Turbocharge ANNS on Real Processing-in-Memory by Enabling Fine-Grained Per-PIM-Core Scheduling!
 
 Should there be any questions, please contact the authors in HotCRP. The authors will respond to each question within 24hrs and as soon as possible.
 
@@ -8,11 +8,11 @@ Should there be any questions, please contact the authors in HotCRP. The authors
 
 
 
-**Major Claim 1:** PIMANN outperforms baselines in terms of query throughput and latency. (Exp \#1,\#2,\#7,\#8)
+**Major Claim 1:** PIM-ANNS outperforms baselines in terms of query throughput and latency. (Exp \#1,\#2,\#7,\#8)
 
-**Major Claim 2:** PIMANN overcomes batch scheduling limitations via fine-grained per-PU scheduling. (Exp \#3,\#6a)
+**Major Claim 2:** PIM-ANNS overcomes batch scheduling limitations via fine-grained per-PU scheduling. (Exp \#3,\#6a)
 
-**Major Claim 3:** PIMANN’s techniques synergistically improve performance.(Exp \#4,\#5,\#6b)
+**Major Claim 3:** PIM-ANNS’s techniques synergistically improve performance.(Exp \#4,\#5,\#6b)
 
 ## Overview
 
@@ -32,13 +32,13 @@ AE/                  # test scripts and plotting scripts
 main.cpp             # main program entry point
 ```
 
-### Overview of PIMANN
+### Overview of PIM-ANNS
 
-This figure shows the workflow of an ANNS query in PIMANN.
+This figure shows the workflow of an ANNS query in PIM-ANNS.
 It supposes PU_0 is overloaded. 
 Our per-PU query dispatching will dispatch this query to the replica on PU_1.
 
-<img src="figures/overview-pimann.png" alt="Throughput comparison" width="500">
+<img src="figures/overview-PIM-ANNS.png" alt="Throughput comparison" width="500">
 
 
 ## Environment Setup
@@ -81,7 +81,7 @@ sudo apt install libboost-all-dev
 ### Login to the server we provide
 
 We have provided a pre-configured server for AE reviewers.
-The project directory is located at workspace/PIMANN.
+The project directory is located at workspace/PIM-ANNS.
 
 
 
@@ -89,10 +89,10 @@ The project directory is located at workspace/PIMANN.
 ```bash
 ssh -p 12853 wupuqing@44be1613b0de8118.natapp.cc
 
-cd workspace/PIMANN
+cd workspace/PIM-ANNS
 ```
 
-### Building PIMANN from source
+### Building PIM-ANNS from source
 
 Please simply use the CMake building system.
 
@@ -104,7 +104,7 @@ make -j
 
 ### Hello-world example
 
-To verify that everything is prepared, you can run a hello-world example that verifies PIMANN's functionality, please run the following command:
+To verify that everything is prepared, you can run a hello-world example that verifies PIM-ANNS's functionality, please run the following command:
 
 ```bash
 AE/hello_world.sh
@@ -114,7 +114,7 @@ It will run for approximately 1 minute and, on success, output something like be
 
 ```bash
 yyyy-mm-dd hh:mm:ss
-json_path: /home/wupuqing/workspace/PIMANN/config.json
+json_path: /home/wupuqing/workspace/PIM-ANNS/config.json
 query path is /mnt/optane/wpq/dataset/space/query10K.i8bin
 query_num: 10000, dim: 100
 searching SPACE1M, nprobe = 11
@@ -221,20 +221,20 @@ python3 plot.py help
 
 ### Detailed claims & Experimental result verification
 
-#### **Main Claim 1: PIMANN Outperforms Existing ANNS Systems in Throughput, Latency, and Cost Efficiency**  
+#### **Main Claim 1: PIM-ANNS Outperforms Existing ANNS Systems in Throughput, Latency, and Cost Efficiency**  
 **Sub-claims**:  
-1. **Throughput (Exp1 + Exp7)**: PIMANN achieves **2.4–10.4× higher QPS** than Faiss-CPU, PIMANN-Batch, and Faiss-GPU on billion-scale datasets (SPACE-1B/SIFT-1B) at the same recall@10.  
-2. **Latency (Exp2)**: PIMANN reduces **average latency by 32–43%** and **tail latency (P99) by 26–63%** compared to Faiss-CPU, eliminating inter-batch stalls.  
-3. **Cost Efficiency (Exp8)**: PIMANN improves **QPS/$ by 2.4× over CPU** and **4.8× over GPU** (Table 1), leveraging UPMEM’s high memory bandwidth and parallelism.  
+1. **Throughput (Exp1 + Exp7)**: PIM-ANNS achieves **2.4–10.4× higher QPS** than Faiss-CPU, PIM-ANNS-Batch, and Faiss-GPU on billion-scale datasets (SPACE-1B/SIFT-1B) at the same recall@10.  
+2. **Latency (Exp2)**: PIM-ANNS reduces **average latency by 32–43%** and **tail latency (P99) by 26–63%** compared to Faiss-CPU, eliminating inter-batch stalls.  
+3. **Cost Efficiency (Exp8)**: PIM-ANNS improves **QPS/$ by 2.4× over CPU** and **4.8× over GPU** (Table 1), leveraging UPMEM’s high memory bandwidth and parallelism.  
 
 **Verification**:  
 - Reproduce Figures 9 (throughput), 10 (latency), and Table 1 (cost) using provided scripts and datasets.  
 
 ---
 
-#### **Main Claim 2: PIMANN Overcomes Batch Scheduling Limitations via Fine-Grained Per-PU Scheduling**  
+#### **Main Claim 2: PIM-ANNS Overcomes Batch Scheduling Limitations via Fine-Grained Per-PU Scheduling**  
 **Sub-claims**:  
-1. **PU Utilization (Exp3)**: PIMANN maintains **~80% PU utilization** (vs. ~20% for PIMANN-Batch) by eliminating idle gaps between batches (Figures 11–12).  
+1. **PU Utilization (Exp3)**: PIM-ANNS maintains **~80% PU utilization** (vs. ~20% for PIM-ANNS-Batch) by eliminating idle gaps between batches (Figures 11–12).  
 2. **Load Balancing**: Per-PU dispatching ensures **uniform task distribution** across PUs (Figure 5b → Figure 14a).  
 
 **Verification**:  
@@ -242,7 +242,7 @@ python3 plot.py help
 
 ---
 
-#### **Main Claim 3: PIMANN’s Techniques Synergistically Improve Performance**  
+#### **Main Claim 3: PIM-ANNS’s Techniques Synergistically Improve Performance**  
 **Sub-claims**:  
 1. **Coroutines (Exp4)**: Hiding bus-switching latency with coroutines boosts throughput **3×** (Figure 13).  
 2. **Selective Replication (Exp5)**: Throughput **increases with memory budget** (Figure 14b).  
@@ -316,8 +316,8 @@ Modify `/common/dataset.h` and `/host/util.cpp` for custom formats.
 
 ## Benchmark Comparisons
 - **Faiss-CPU**: https://github.com/facebookresearch/faiss  
-- **PIMANN-Batch**: Traditional batch-scheduled UPMEM acceleration  
-- **PIMANN**: Our proposed per-PU scheduled UPMEM acceleration  
+- **PIM-ANNS-Batch**: Traditional batch-scheduled UPMEM acceleration  
+- **PIM-ANNS**: Our proposed per-PU scheduled UPMEM acceleration  
 
 ## Metrics
 - Recall@10  
