@@ -519,6 +519,51 @@ void DPUWrapper::init_balance(int nprobe, int top_k)
         }
     }
 
+    
+/*----begin---*/
+    // 这段代码使用query_path的查询数据计算每个batch的平均聚类长度
+    // 注意：这里使用新的查询数据和新的搜索结果
+
+    // 读取query_path的查询数据
+    float *new_query_data = read_query(query_path.c_str(), QUERY_TYPE, nq, dim);
+    assert(dim == DIM);
+
+    // 为新的查询数据分配空间
+    faiss::idx_t *new_idx = new faiss::idx_t[nq * nprobe];
+    float *new_dis = new float[nq * nprobe];
+
+    // 执行新的搜索
+    fifo_index->quantizer->search(nq, new_query_data, nprobe, new_dis, new_idx, nullptr);
+
+    const int batchsize = 10000;
+    int total_batches = (nq + batchsize - 1) / batchsize;
+
+    for (int batch = 0; batch < total_batches; batch++) {
+        int start = batch * batchsize;
+        int end = std::min((batch + 1) * batchsize, nq);
+        int current_batch_size = end - start;
+
+        double avg_c_len = 0.0;
+        for (int i = start; i < end; i++) {
+            for (int j = 0; j < nprobe; j++) {
+                int cluster_id = new_idx[i * nprobe + j];
+                avg_c_len += fifo_index->get_list_size(cluster_id);
+            }
+        }
+        avg_c_len /= (current_batch_size * nprobe);
+
+        std::cout << "Batch " << batch + 1 << "/" << total_batches 
+                << ": Average query cluster length (c_len) = " << avg_c_len << std::endl;
+    }
+
+    // 释放新分配的内存
+    delete[] new_query_data;
+    delete[] new_idx;
+    delete[] new_dis;
+/*---end----*/
+
+
+
     std::ofstream outfile(freq_path, std::ios::trunc);
     for (int i = 0; i < mconfig.getMaxCluster(); i++)
     {
@@ -2198,92 +2243,96 @@ void DPUWrapper::print_result(int nprobe, int top_k, int type)
 
     // outfile << "path: " << result_path_nprobe << std::endl;
 
-    for (int i = 0; i < query_num; i++)
+    // for (int i = 0; i < query_num; i++)
+    // {
+
+    //     for (int j = 0; j < top_k; j++)
+    //     {
+    //         outfile << "q_id = " << i << ", simi_values[" << j
+    //                 << "]: " << query_info[i]->simi_values[j] << std::endl;
+    //     }
+    //     for (int j = 0; j < top_k; j++)
+    //     {
+    //         outfile << "q_id = " << i << ", simi_ids[" << j
+    //                 << "]: " << query_info[i]->simi_ids[j] << std::endl;
+    //     }
+    // }
+
+    // if(mconfig.getEnableDynamic()==true)
     {
 
-        for (int j = 0; j < top_k; j++)
+        int batch_size = 1000;
+        std::vector<double> qps_fig;
+        std::vector<double> latency_fig;
+
+        for (int batch_start = 0; batch_start < query_num; batch_start += batch_size)
         {
-            outfile << "q_id = " << i << ", simi_values[" << j
-                    << "]: " << query_info[i]->simi_values[j] << std::endl;
-        }
-        for (int j = 0; j < top_k; j++)
+            int batch_end = std::min(batch_start + batch_size, query_num);
+
+
+            auto earliest_start = query_info[batch_start]->start_;
+            auto latest_end = query_info[batch_start]->end_;
+
+
+            double total_latency = 0;
+            int valid_queries = 0;
+
+        for (int i = batch_start; i < batch_end; i++)
         {
-            outfile << "q_id = " << i << ", simi_ids[" << j
-                    << "]: " << query_info[i]->simi_ids[j] << std::endl;
+            std::cout << "query id = " << i
+                    << ", start = "
+                    << std::chrono::duration_cast<std::chrono::milliseconds>(query_info[i]->start_.time_since_epoch()).count()
+                    << " ms, end = "
+                    << std::chrono::duration_cast<std::chrono::milliseconds>(query_info[i]->end_.time_since_epoch()).count()
+                    << " ms" << std::endl;
+
+            if (query_info[i]->start_ < earliest_start)
+            {
+                earliest_start = query_info[i]->start_;
+            }
+            if (query_info[i]->end_ > latest_end)
+            {
+                latest_end = query_info[i]->end_;
+            }
+
+            if (query_info[i]->end_ < query_info[i]->start_)
+            {
+                continue; 
+            }
+
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+                query_info[i]->end_ - query_info[i]->start_);
+            total_latency += duration.count();
+            valid_queries++;
         }
+
+    
+        auto batch_duration = std::chrono::duration_cast<std::chrono::milliseconds>(latest_end - earliest_start);
+        double throughput = (batch_end - batch_start) / (batch_duration.count() / 1000.0);
+        double avg_latency = total_latency / valid_queries;
+
+        qps_fig.push_back(throughput);
+        latency_fig.push_back(avg_latency);
+
+        outfile << "batch " << (batch_start / batch_size) + 1 << " ("
+                << batch_start << "-" << (batch_end - 1) << "):\n"
+                << "  earliest start: "
+                << std::chrono::duration_cast<std::chrono::milliseconds>(earliest_start.time_since_epoch()).count()
+                << "ms\n"
+                << "  latest end: "
+                << std::chrono::duration_cast<std::chrono::milliseconds>(latest_end.time_since_epoch()).count()
+                << "ms\n"
+                << "  time: " << batch_duration.count() << "ms\n"
+                << "  qps: " << throughput << " queries/s\n"
+                << "  average latency: " << avg_latency << " ms\n\n";
+        }
+
+    
+        drawQPSLineChart(outfile, qps_fig);
+
+
+        drawLatencyChart(outfile, latency_fig);
     }
-
-    // int batch_size = 1000;
-    // std::vector<double> qps_fig;
-    // std::vector<double> latency_fig;
-
-    // for (int batch_start = 0; batch_start < query_num; batch_start += batch_size)
-    // {
-    //     int batch_end = std::min(batch_start + batch_size, query_num);
-
-
-    //     auto earliest_start = query_info[batch_start]->start_;
-    //     auto latest_end = query_info[batch_start]->end_;
-
-
-    //     double total_latency = 0;
-    //     int valid_queries = 0;
-
-    // for (int i = batch_start; i < batch_end; i++)
-    // {
-    //     std::cout << "query id = " << i
-    //               << ", start = "
-    //               << std::chrono::duration_cast<std::chrono::milliseconds>(query_info[i]->start_.time_since_epoch()).count()
-    //               << " ms, end = "
-    //               << std::chrono::duration_cast<std::chrono::milliseconds>(query_info[i]->end_.time_since_epoch()).count()
-    //               << " ms" << std::endl;
-
-    //     if (query_info[i]->start_ < earliest_start)
-    //     {
-    //         earliest_start = query_info[i]->start_;
-    //     }
-    //     if (query_info[i]->end_ > latest_end)
-    //     {
-    //         latest_end = query_info[i]->end_;
-    //     }
-
-    //     if (query_info[i]->end_ < query_info[i]->start_)
-    //     {
-    //         continue; 
-    //     }
-
-    //     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
-    //         query_info[i]->end_ - query_info[i]->start_);
-    //     total_latency += duration.count();
-    //     valid_queries++;
-    // }
-
-  
-    // auto batch_duration = std::chrono::duration_cast<std::chrono::milliseconds>(latest_end - earliest_start);
-    // double throughput = (batch_end - batch_start) / (batch_duration.count() / 1000.0);
-    // double avg_latency = total_latency / valid_queries;
-
-    // qps_fig.push_back(throughput);
-    // latency_fig.push_back(avg_latency);
-
-    // outfile << "batch " << (batch_start / batch_size) + 1 << " ("
-    //         << batch_start << "-" << (batch_end - 1) << "):\n"
-    //         << "  earliest start: "
-    //         << std::chrono::duration_cast<std::chrono::milliseconds>(earliest_start.time_since_epoch()).count()
-    //         << "ms\n"
-    //         << "  latest end: "
-    //         << std::chrono::duration_cast<std::chrono::milliseconds>(latest_end.time_since_epoch()).count()
-    //         << "ms\n"
-    //         << "  time: " << batch_duration.count() << "ms\n"
-    //         << "  qps: " << throughput << " queries/s\n"
-    //         << "  average latency: " << avg_latency << " ms\n\n";
-    // }
-
- 
-    // drawQPSLineChart(outfile, qps_fig);
-
-
-    // drawLatencyChart(outfile, latency_fig);
 
     outfile.close();
 }
@@ -2806,7 +2855,7 @@ void DPUWrapper::thread_dynamic_balance(const std::vector<int> &cluster_id_v, in
     {
         if (mconfig.getEnableDynamic() == false)
         {
-            break;
+            // break;
         }
         if (is_last)
         {
@@ -3016,14 +3065,23 @@ void DPUWrapper::thread_dynamic_balance(const std::vector<int> &cluster_id_v, in
 
         // is_first_dynamic = false;
 
-        if (similarity < 0.5)
+        if (similarity < 0.5 && mconfig.getEnableDynamic() == true)
         {
             if (is_first_dynamic == false)
             {
                 break;
             }
             is_first_dynamic = false;
-            printf("Similarity is below 50 percent, triggering adjustment...\n");
+
+            auto now = std::chrono::system_clock::now();
+            std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+            std::tm now_tm = *std::localtime(&now_time);
+            char time_str[100];
+            std::strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", &now_tm);
+            
+            printf("\n===== Starting data layout adjustment =====\n");
+            printf("Trigger condition: Similarity=%.2f < 0.5\n", similarity);
+            printf("Adjustment start time: %s\n", time_str);
 
            
             int diff_replica[mconfig.getMaxCluster()] = {0};
@@ -3032,6 +3090,53 @@ void DPUWrapper::thread_dynamic_balance(const std::vector<int> &cluster_id_v, in
             {
                 diff_replica[i] = copy_num[i] - before_copy_num[i];
             }
+
+
+        /*begin: 打印集群和切片副本变化统计信息*/
+            // 在计算diff_replica后添加
+            printf("\nCluster replica changes summary:\n");
+            // 打印表头：集群ID | 调整前副本数 | 调整后副本数 | 变化量 | 调整前切片总数 | 调整后切片总数
+            printf("%-10s %-10s %-10s %-10s %-15s %-15s\n", 
+                "Cluster", "Before", "After", "Change", "ShardBefore", "ShardAfter");
+
+            // 遍历所有集群，打印有变化的集群信息
+            for (int i = 0; i < mconfig.getMaxCluster(); i++) {
+                if (diff_replica[i] != 0) {  // 只打印有变化的集群
+                    // 计算切片级别的副本数（每个集群副本对应 pair_shard_num*2 个切片）
+                    int shard_before = before_copy_num[i] * cluster_info[i]->pair_shard_num * 2;
+                    int shard_after = copy_num[i] * cluster_info[i]->pair_shard_num * 2;
+                    
+                    // 打印该集群的副本变化信息
+                    printf("%-10d %-10d %-10d %+d %-15d %-15d\n", 
+                        i, 
+                        before_copy_num[i], 
+                        copy_num[i], 
+                        diff_replica[i],
+                        shard_before,
+                        shard_after);
+                }
+            }
+
+            /* 计算并打印集群级别的总副本数变化 */
+            int total_before = 0, total_after = 0;
+            for (int i = 0; i < mconfig.getMaxCluster(); i++) {
+                total_before += before_copy_num[i];
+                total_after += copy_num[i];
+            }
+            printf("\nTotal cluster replicas: before=%d, after=%d, change=%+d\n",
+                total_before, total_after, total_after - total_before);
+
+            /* 计算并打印切片级别的总副本数变化 */
+            int total_shard_before = 0, total_shard_after = 0;
+            for (int i = 0; i < mconfig.getMaxCluster(); i++) {
+                total_shard_before += before_copy_num[i] * cluster_info[i]->pair_shard_num * 2;
+                total_shard_after += copy_num[i] * cluster_info[i]->pair_shard_num * 2;
+            }
+            printf("Total shard replicas: before=%d, after=%d, change=%+d\n",
+                total_shard_before, total_shard_after, total_shard_after - total_shard_before);
+        /*end: 打印集群和切片副本变化统计信息*/
+
+
 
             printf("Can remove replica:\n");
             for (int i = 0; i < mconfig.getMaxCluster(); i++)
@@ -3395,6 +3500,24 @@ void DPUWrapper::thread_dynamic_balance(const std::vector<int> &cluster_id_v, in
             xmh::PerfCounter counter;
 
             counter.Record("xfer size when dynamic balance(GB)", total_size_GB);
+
+            // 在调整结束后添加耗时统计
+            auto adjustment_end = std::chrono::system_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(adjustment_end - now);
+            
+            // 获取结束时间字符串
+            std::time_t end_time = std::chrono::system_clock::to_time_t(adjustment_end);
+            std::tm end_tm = *std::localtime(&end_time);
+            char end_time_str[100];
+            std::strftime(end_time_str, sizeof(end_time_str), "%Y-%m-%d %H:%M:%S", &end_tm);
+            
+            printf("\n===== Adjustment Completed =====\n");
+            printf("Total adjustment time: %lld ms (%.2f seconds)\n", 
+                duration.count(), duration.count()/1000.0);
+            printf("Data transfer size: %.2f GB\n", total_size_GB);
+            printf("Affected clusters: %d\n", mconfig.getMaxCluster());
+            printf("Finish time: %s\n", end_time_str);
+            printf("================================\n");
         }
     }
 

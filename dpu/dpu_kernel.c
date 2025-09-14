@@ -315,7 +315,7 @@ __host dpu_fifo_output_t result;
 /*-----------cache------------------*/
 
 // when PQ_M=32, DSIZE=10; when PQ_M=16, DSIZE=40
-#define DSIZE 10
+#define DSIZE 6
 #define IDSIZE DSIZE
 __host DIST_TYPE lutw[LUT_SIZE];
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#define TEST_CPU
+#define TEST_DPU
 
 #define MY_PQ_M 20
 
@@ -36,7 +36,7 @@
 
 // SPACE 1B20M4096 MAX_SIZE = 22923525
 // MAX_SHARD = MAX_CLUSTER_LEN / SLOT_L = 22923525 / 100000 = 229
-#define MAX_SHARD 300
+#define MAX_SHARD 500
 
 #define NO_QUERY -1
 #define MAX_K 10
