@@ -1,6 +1,7 @@
 
 
 #include "host/host_fifo.h"
+#include <cstdio>
 
 std::vector<std::shared_ptr<QUERY_INFO>> query_info;
 
@@ -1317,7 +1318,7 @@ void DPUWrapper::level2_search(
                                        &sim_table_dynamic[key * LUT_SIZE],
                                        sizeof(DIST_TYPE) * LUT_SIZE);
                             }
-
+                            
                             if (enable_num == 2)
                             {
                                 dpu_fifo_input_t &task_ = pair_task.task[0];

@@ -43,7 +43,7 @@ macro0_values=("space1B-20M-4096C.json")
 macro1_values=("#define TEST_DPU" )
 
 
-cache_size_values=(6 10)
+cache_size_values=(6)
 
 run_single_command() {
     local cmd="$1"
@@ -123,7 +123,7 @@ for m0 in "${macro0_values[@]}"; do
                 make -j
                 make main -j
 
-                nprobe=(4 5 8 10 21 71)
+                nprobe=(4)
                 echo "Running with ${m0}"
                 
                 for np in "${nprobe[@]}"; do

@@ -43,7 +43,7 @@ sed -i \
 macro0_values=("dynamic-space1B-20M-4096C.json")
 macro1_values=("#define TEST_DPU" )
 
-thread_values=(1 2 4)
+thread_values=(1)
 
 
 

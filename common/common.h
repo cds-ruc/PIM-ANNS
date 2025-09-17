@@ -85,3 +85,5 @@ typedef struct DPU_INFO_COMMON
 #define CLOCK_DPU_SELF 400000000
 
 #define MS_CLOCK_DPU_SELF 400000
+
+#define SEG_NUM 2

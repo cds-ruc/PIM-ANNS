@@ -40,7 +40,7 @@ sed -i \
 macro0_values=("space1B-20M-4096C.json")
 macro1_values=("#define TEST_DPU" )
 
-slice_values=(50000 100000 150000 200000 250000)
+slice_values=(250000)
 
 
 
@@ -118,7 +118,7 @@ for m0 in "${macro0_values[@]}"; do
                 make -j
                 make main -j
 
-                nprobe=(4 5 8 10 21 71)
+                nprobe=(5)
                 echo "Running with ${m0}"
                 
                 for np in "${nprobe[@]}"; do

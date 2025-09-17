@@ -45,7 +45,7 @@ macro0_values=("space1B-20M-4096C.json")
 macro1_values=("#define TEST_DPU" )
 
 
-dpu_thread_values=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16)
+dpu_thread_values=(10)
 
 run_single_command() {
     local cmd="$1"
@@ -119,14 +119,14 @@ for m0 in "${macro0_values[@]}"; do
                     mkdir -p "../$new_dir/DPU_DIR"
                 fi
             
-                # cd "$PROJECT_ROOT"
-                # rm -rf build && cmake -B build . 
-                # cd build
+                cd "$PROJECT_ROOT"
+                rm -rf build && cmake -B build . 
+                cd build
 
                 make -j
                 make main -j
 
-                nprobe=(4 5 8 10 21 71)
+                nprobe=(5)
                 echo "Running with ${m0}"
                 
                 for np in "${nprobe[@]}"; do

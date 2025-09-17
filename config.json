@@ -1,8 +1,8 @@
 {
   "MAX_CLUSTER": 4096,
-  "RESULT_DIR": "CACHE_SIZE_6_SPACE1B20M4096_DIR",
+  "RESULT_DIR": "DynamicBalance_THREAD_1_DynamicSPACE1B20M4096_DIR",
   "INDEX_PATH": "/mnt/optane/wpq/dataset/space/index/space1B_M20_PQ8_C4096_R_L2.faissindex",
-  "QUERY_PATH": "/mnt/optane/wpq/dataset/space/query10K.i8bin",
-  "HISTORY_QUERY_PATH": "/mnt/optane/wpq/dataset/space/query10K.i8bin",
-  "GROUNDTRUTH_PATH": "/mnt/optane/wpq/dataset/space/space1B_L2_gt_k100.bin"
+  "QUERY_PATH": "/mnt/optane/wpq/dataset/space/dynamic-query100000-theta-0.8.i8bin",
+  "HISTORY_QUERY_PATH": "/mnt/optane/wpq/dataset/space/history-query100000-theta-0.8.i8bin",
+  "GROUNDTRUTH_PATH": "/mnt/optane/wpq/dataset/space/space1B-query100000-theta-0.8_L2_gt_k100.bin"
 }

@@ -33,6 +33,7 @@ set(HOST_SOURCES
 
 set(DPU_SOURCES
     ${DPU_DIR}/dpu_kernel.c
+    # ${DPU_DIR}/dpu_kernel_bigM.c
 )
 
 set(BATCH_DPU_SOURCES
@@ -108,3 +109,6 @@ add_dependencies(dpu_lib batch_dpu_adc_code)
 
 add_executable(main EXCLUDE_FROM_ALL main.cpp)
 target_link_libraries(main PUBLIC dpu_lib)
+
+add_executable(main-fakehost EXCLUDE_FROM_ALL main-fakehost.cpp)
+target_link_libraries(main-fakehost PUBLIC dpu_lib)

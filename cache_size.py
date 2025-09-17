@@ -7,7 +7,7 @@ import numpy as np
 # ==================== 数据抽取函数 ====================
 def extract_data():
     """从目录结构中提取性能数据"""
-    cache_sizes = [2,4, 8, 12, 16, 20]
+    cache_sizes = [2,4,6, 8, 10,12, 16, 20]
     base_dir_pattern = "CACHE_SIZE_{}_SPACE1B20M4096_DIR"
     dpu_file_pattern = "/DPU_DIR/dpu-time-nprobe{}.txt"
     
@@ -247,7 +247,6 @@ def additional_analysis(df):
 # ==================== 主程序 ====================
 if __name__ == "__main__":
     print("=== 开始缓存大小性能分析 ===")
-    print("缓存大小配置: [8, 12, 16, 20]")
     
     # 数据加载或提取
     try:
