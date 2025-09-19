@@ -60,7 +60,7 @@ run_single_command() {
 
 run_single_command() {
     local cmd="$1"
-    local max_test=10
+    local max_test=1
     local i=0
     local exit_code=0
 

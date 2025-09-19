@@ -2244,20 +2244,20 @@ void DPUWrapper::print_result(int nprobe, int top_k, int type)
 
     // outfile << "path: " << result_path_nprobe << std::endl;
 
-    // for (int i = 0; i < query_num; i++)
-    // {
+    for (int i = 0; i < query_num; i++)
+    {
 
-    //     for (int j = 0; j < top_k; j++)
-    //     {
-    //         outfile << "q_id = " << i << ", simi_values[" << j
-    //                 << "]: " << query_info[i]->simi_values[j] << std::endl;
-    //     }
-    //     for (int j = 0; j < top_k; j++)
-    //     {
-    //         outfile << "q_id = " << i << ", simi_ids[" << j
-    //                 << "]: " << query_info[i]->simi_ids[j] << std::endl;
-    //     }
-    // }
+        for (int j = 0; j < top_k; j++)
+        {
+            outfile << "q_id = " << i << ", simi_values[" << j
+                    << "]: " << query_info[i]->simi_values[j] << std::endl;
+        }
+        for (int j = 0; j < top_k; j++)
+        {
+            outfile << "q_id = " << i << ", simi_ids[" << j
+                    << "]: " << query_info[i]->simi_ids[j] << std::endl;
+        }
+    }
 
     // if(mconfig.getEnableDynamic()==true)
     {

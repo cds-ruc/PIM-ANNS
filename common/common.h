@@ -1,5 +1,6 @@
 #pragma once
 #include "dataset.h"
+#include <stdint.h>
 
 #if defined(__GNUC__)
 #define MRAM_PTR
@@ -84,6 +85,6 @@ typedef struct DPU_INFO_COMMON
 
 #define CLOCK_DPU_SELF 400000000
 
-#define MS_CLOCK_DPU_SELF 400000
-
-#define SEG_NUM 2
+#define MS_CLOCK_DPU_SELF 400000 
+ 
+#define SEG_NUM 4

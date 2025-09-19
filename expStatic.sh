@@ -118,7 +118,7 @@ for m0 in "${macro0_values[@]}"; do
                 make -j
                 make main -j
 
-                nprobe=(10)
+                nprobe=(4)
                 echo "Running with ${m0}"
                 
                 for np in "${nprobe[@]}"; do
