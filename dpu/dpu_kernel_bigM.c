@@ -288,7 +288,7 @@ __mram DIST_TYPE part_dis[SLOT_L + 1000]; // 存储分段距离
 __mram dpu_fifo_input_t query;
 
 /*-------------------result-----------------*/
-// <1KB 
+// <1KB
 __host dpu_fifo_output_t result;
 
 /*-----------cache------------------*/
@@ -297,9 +297,8 @@ __host dpu_fifo_output_t result;
 #define DSIZE 8
 #define IDSIZE DSIZE
 
-//20 * 1024 / SEG_NUM = 5KB
+// 20 * 1024 / SEG_NUM = 5KB
 __host DIST_TYPE lutw[LUT_SIZE / SEG_NUM];
-
 
 //(20 + 8 + 4) * 16 * 8 = 4096B = 4KB
 __host DATA_TYPE data_wram[NR_TASKLETS * DSIZE * MY_PQ_M];
@@ -310,7 +309,6 @@ __host DIST_TYPE part_dis_wram[NR_TASKLETS * DSIZE];
   ((i) * (DSIZE) * (MY_PQ_M) + (j) * (MY_PQ_M) + (k))
 
 #define INDEX_ID_W(i, j) ((i) * (IDSIZE) + (j))
-
 
 //(4 + 8) * 16 * 10 = 1920B ~= 2KB
 __host DIST_TYPE local_dis_all[NR_TASKLETS * MAX_K];
@@ -330,7 +328,10 @@ void delay(int ms) {
   }
 }
 
+
+
 void task_perf() {
+ 
   int t_id = me(); // 当前线程ID (0 ≤ t_id < NR_TASKLETS)
   perfcounter_cycles cycles;
 
@@ -396,7 +397,7 @@ void task_perf() {
           uint8_t pqcode =
               data_wram[INDEX_DATA_W(t_id, 0, 0) + j * MY_PQ_M + lut_start + l];
 
-              seg_sum += lutw[l * MY_PQ_CLUSTER + pqcode];
+          seg_sum += lutw[l * MY_PQ_CLUSTER + pqcode];
         }
 
         part_dis_wram[t_id * DSIZE + j] = seg_sum;

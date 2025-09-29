@@ -32,8 +32,8 @@ set(HOST_SOURCES
 )
 
 set(DPU_SOURCES
-    # ${DPU_DIR}/dpu_kernel.c
-    ${DPU_DIR}/dpu_kernel_bigM.c
+    ${DPU_DIR}/dpu_kernel.c
+    # ${DPU_DIR}/dpu_kernel_bigM.c
 )
 
 set(BATCH_DPU_SOURCES

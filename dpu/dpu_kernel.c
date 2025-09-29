@@ -1,3 +1,7 @@
+#include "../common/common.h"
+#include "cyclecounter.h"
+#include "defs.h"
+#include "mutex.h"
 #include <assert.h>
 #include <barrier.h>
 #include <ctype.h>
@@ -11,10 +15,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wramfifo.h>
-#include "../common/common.h"
-#include "cyclecounter.h"
-#include "defs.h"
-#include "mutex.h"
 
 #include <alloc.h>
 
@@ -66,80 +66,71 @@ d, because heaps are often small. More complex
 
 #define MAX_VALUE -1e9
 
-static bool cmp(DIST_TYPE a, DIST_TYPE b) {
-    return a < b;
-}
+static bool cmp(DIST_TYPE a, DIST_TYPE b) { return a < b; }
 
 static bool cmp2(DIST_TYPE a1, DIST_TYPE b1, ID_TYPE a2, ID_TYPE b2) {
-    return (a1 < b1) || ((a1 == b1) && (a2 < b2));
+  return (a1 < b1) || ((a1 == b1) && (a2 < b2));
 }
 
 #else
 
 #define MAX_VALUE 1e9
 
-static bool cmp(DIST_TYPE a, DIST_TYPE b) {
-    return a > b;
-}
+static bool cmp(DIST_TYPE a, DIST_TYPE b) { return a > b; }
 
 static bool cmp2(DIST_TYPE a1, DIST_TYPE b1, ID_TYPE a2, ID_TYPE b2) {
-    return (a1 > b1) || ((a1 == b1) && (a2 > b2));
+  return (a1 > b1) || ((a1 == b1) && (a2 > b2));
 }
 #endif
 
-void heap_pop1(int64_t k, DIST_TYPE* bh_val, ID_TYPE* bh_ids) {
-    bh_val--; /* Use 1-based indexing for easier node->child translation */
-    bh_ids--;
-    DIST_TYPE val = bh_val[k];
-    ID_TYPE id = bh_ids[k];
-    int64_t i = 1, i1, i2;
-    while (1) {
-        i1 = i << 1;
-        i2 = i1 + 1;
-        if (i1 > k)
-            break;
-        if ((i2 == k + 1) ||
-            cmp2(bh_val[i1], bh_val[i2], bh_ids[i1], bh_ids[i2])) {
-            if (cmp2(val, bh_val[i1], id, bh_ids[i1])) {
-                break;
-            }
-            bh_val[i] = bh_val[i1];
-            bh_ids[i] = bh_ids[i1];
-            i = i1;
-        } else {
-            if (cmp2(val, bh_val[i2], id, bh_ids[i2])) {
-                break;
-            }
-            bh_val[i] = bh_val[i2];
-            bh_ids[i] = bh_ids[i2];
-            i = i2;
-        }
+void heap_pop1(int64_t k, DIST_TYPE *bh_val, ID_TYPE *bh_ids) {
+  bh_val--; /* Use 1-based indexing for easier node->child translation */
+  bh_ids--;
+  DIST_TYPE val = bh_val[k];
+  ID_TYPE id = bh_ids[k];
+  int64_t i = 1, i1, i2;
+  while (1) {
+    i1 = i << 1;
+    i2 = i1 + 1;
+    if (i1 > k)
+      break;
+    if ((i2 == k + 1) || cmp2(bh_val[i1], bh_val[i2], bh_ids[i1], bh_ids[i2])) {
+      if (cmp2(val, bh_val[i1], id, bh_ids[i1])) {
+        break;
+      }
+      bh_val[i] = bh_val[i1];
+      bh_ids[i] = bh_ids[i1];
+      i = i1;
+    } else {
+      if (cmp2(val, bh_val[i2], id, bh_ids[i2])) {
+        break;
+      }
+      bh_val[i] = bh_val[i2];
+      bh_ids[i] = bh_ids[i2];
+      i = i2;
     }
-    bh_val[i] = bh_val[k];
-    bh_ids[i] = bh_ids[k];
+  }
+  bh_val[i] = bh_val[k];
+  bh_ids[i] = bh_ids[k];
 }
 
-void heap_push1(
-        int64_t k,
-        DIST_TYPE* bh_val,
-        ID_TYPE* bh_ids,
-        DIST_TYPE val,
-        ID_TYPE id) {
-    bh_val--; /* Use 1-based indexing for easier node->child translation */
-    bh_ids--;
-    int64_t i = k, i_father;
-    while (i > 1) {
-        i_father = i >> 1;
-        if (!cmp2(val, bh_val[i_father], id, bh_ids[i_father])) {
-            /* the heap structure is ok */
-            break;
-        }
-        bh_val[i] = bh_val[i_father];
-        bh_ids[i] = bh_ids[i_father];
-        i = i_father;
+void heap_push1(int64_t k, DIST_TYPE *bh_val, ID_TYPE *bh_ids, DIST_TYPE val,
+                ID_TYPE id) {
+  bh_val--; /* Use 1-based indexing for easier node->child translation */
+  bh_ids--;
+  int64_t i = k, i_father;
+  while (i > 1) {
+    i_father = i >> 1;
+    if (!cmp2(val, bh_val[i_father], id, bh_ids[i_father])) {
+      /* the heap structure is ok */
+      break;
     }
-    bh_val[i] = val;
-    bh_ids[i] = id;
+    bh_val[i] = bh_val[i_father];
+    bh_ids[i] = bh_ids[i_father];
+    i = i_father;
+  }
+  bh_val[i] = val;
+  bh_ids[i] = id;
 }
 
 /**
@@ -148,44 +139,39 @@ void heap_push1(
  * values.
  */
 
-void heap_replace_top1(
-        int64_t k,
-        DIST_TYPE* bh_val,
-        ID_TYPE* bh_ids,
-        DIST_TYPE val,
-        ID_TYPE id) {
-    bh_val--; /* Use 1-based indexing for easier node->child translation */
-    bh_ids--;
-    int64_t i = 1, i1, i2;
-    while (1) {
-        i1 = i << 1;
-        i2 = i1 + 1;
-        if (i1 > k) {
-            break;
-        }
-
-        // Note that cmp2() is a bool function answering
-        // `(a1 > b1) || ((a1 == b1) && (a2 > b2))` for max
-        // heap and same with the `<` sign for min heap.
-        if ((i2 == k + 1) ||
-            cmp2(bh_val[i1], bh_val[i2], bh_ids[i1], bh_ids[i2])) {
-            if (cmp2(val, bh_val[i1], id, bh_ids[i1])) {
-                break;
-            }
-            bh_val[i] = bh_val[i1];
-            bh_ids[i] = bh_ids[i1];
-            i = i1;
-        } else {
-            if (cmp2(val, bh_val[i2], id, bh_ids[i2])) {
-                break;
-            }
-            bh_val[i] = bh_val[i2];
-            bh_ids[i] = bh_ids[i2];
-            i = i2;
-        }
+void heap_replace_top1(int64_t k, DIST_TYPE *bh_val, ID_TYPE *bh_ids,
+                       DIST_TYPE val, ID_TYPE id) {
+  bh_val--; /* Use 1-based indexing for easier node->child translation */
+  bh_ids--;
+  int64_t i = 1, i1, i2;
+  while (1) {
+    i1 = i << 1;
+    i2 = i1 + 1;
+    if (i1 > k) {
+      break;
     }
-    bh_val[i] = val;
-    bh_ids[i] = id;
+
+    // Note that cmp2() is a bool function answering
+    // `(a1 > b1) || ((a1 == b1) && (a2 > b2))` for max
+    // heap and same with the `<` sign for min heap.
+    if ((i2 == k + 1) || cmp2(bh_val[i1], bh_val[i2], bh_ids[i1], bh_ids[i2])) {
+      if (cmp2(val, bh_val[i1], id, bh_ids[i1])) {
+        break;
+      }
+      bh_val[i] = bh_val[i1];
+      bh_ids[i] = bh_ids[i1];
+      i = i1;
+    } else {
+      if (cmp2(val, bh_val[i2], id, bh_ids[i2])) {
+        break;
+      }
+      bh_val[i] = bh_val[i2];
+      bh_ids[i] = bh_ids[i2];
+      i = i2;
+    }
+  }
+  bh_val[i] = val;
+  bh_ids[i] = id;
 }
 
 /*******************************************************************
@@ -196,28 +182,23 @@ void heap_replace_top1(
  * Store k0 elements in a heap containing up to k values. Note that
  * (bh_val, bh_ids) can be the same as (x, ids) */
 
-void heap_heapify1(
-        int64_t k,
-        DIST_TYPE* bh_val,
-        ID_TYPE* bh_ids,
-        const DIST_TYPE* x,
-        const ID_TYPE* ids,
-        int64_t k0) {
-    if (k0 > 0)
-        assert(x);
+void heap_heapify1(int64_t k, DIST_TYPE *bh_val, ID_TYPE *bh_ids,
+                   const DIST_TYPE *x, const ID_TYPE *ids, int64_t k0) {
+  if (k0 > 0)
+    assert(x);
 
-    if (ids) {
-        for (int64_t i = 0; i < k0; i++)
-            heap_push1(i + 1, bh_val, bh_ids, x[i], ids[i]);
-    } else {
-        for (int64_t i = 0; i < k0; i++)
-            heap_push1(i + 1, bh_val, bh_ids, x[i], i);
-    }
+  if (ids) {
+    for (int64_t i = 0; i < k0; i++)
+      heap_push1(i + 1, bh_val, bh_ids, x[i], ids[i]);
+  } else {
+    for (int64_t i = 0; i < k0; i++)
+      heap_push1(i + 1, bh_val, bh_ids, x[i], i);
+  }
 
-    for (int64_t i = k0; i < k; i++) {
-        bh_val[i] = MAX_VALUE;
-        bh_ids[i] = -1;
-    }
+  for (int64_t i = k0; i < k; i++) {
+    bh_val[i] = MAX_VALUE;
+    bh_ids[i] = -1;
+  }
 }
 
 /*******************************************************************
@@ -226,26 +207,21 @@ void heap_heapify1(
 
 /* Add some elements to the heap  */
 
-void heap_addn1(
-        int64_t k,
-        DIST_TYPE* bh_val,
-        ID_TYPE* bh_ids,
-        const DIST_TYPE* x,
-        const ID_TYPE* ids,
-        int64_t n) {
-    int64_t i;
-    if (ids)
-        for (i = 0; i < n; i++) {
-            if (cmp(bh_val[0], x[i])) {
-                heap_replace_top1(k, bh_val, bh_ids, x[i], ids[i]);
-            }
-        }
-    else
-        for (i = 0; i < n; i++) {
-            if (cmp(bh_val[0], x[i])) {
-                heap_replace_top1(k, bh_val, bh_ids, x[i], i);
-            }
-        }
+void heap_addn1(int64_t k, DIST_TYPE *bh_val, ID_TYPE *bh_ids,
+                const DIST_TYPE *x, const ID_TYPE *ids, int64_t n) {
+  int64_t i;
+  if (ids)
+    for (i = 0; i < n; i++) {
+      if (cmp(bh_val[0], x[i])) {
+        heap_replace_top1(k, bh_val, bh_ids, x[i], ids[i]);
+      }
+    }
+  else
+    for (i = 0; i < n; i++) {
+      if (cmp(bh_val[0], x[i])) {
+        heap_replace_top1(k, bh_val, bh_ids, x[i], i);
+      }
+    }
 }
 
 /*******************************************************************
@@ -255,32 +231,32 @@ void heap_addn1(
 /* This function maps a binary heap into a sorted structure.
    It returns the number  */
 
-int64_t heap_reorder1(int64_t k, DIST_TYPE* bh_val, ID_TYPE* bh_ids) {
-    int64_t i, ii;
+int64_t heap_reorder1(int64_t k, DIST_TYPE *bh_val, ID_TYPE *bh_ids) {
+  int64_t i, ii;
 
-    for (i = 0, ii = 0; i < k; i++) {
-        /* top element should be put at the end of the list */
-        DIST_TYPE val = bh_val[0];
-        ID_TYPE id = bh_ids[0];
+  for (i = 0, ii = 0; i < k; i++) {
+    /* top element should be put at the end of the list */
+    DIST_TYPE val = bh_val[0];
+    ID_TYPE id = bh_ids[0];
 
-        /* boundary case: we will over-ride this value if not a true element */
-        heap_pop1(k - i, bh_val, bh_ids);
-        bh_val[k - ii - 1] = val;
-        bh_ids[k - ii - 1] = id;
-        if (id != -1)
-            ii++;
-    }
-    /* Count the number of elements which are effectively returned */
-    int64_t nel = ii;
+    /* boundary case: we will over-ride this value if not a true element */
+    heap_pop1(k - i, bh_val, bh_ids);
+    bh_val[k - ii - 1] = val;
+    bh_ids[k - ii - 1] = id;
+    if (id != -1)
+      ii++;
+  }
+  /* Count the number of elements which are effectively returned */
+  int64_t nel = ii;
 
-    memmove(bh_val, bh_val + k - ii, ii * sizeof(*bh_val));
-    memmove(bh_ids, bh_ids + k - ii, ii * sizeof(*bh_ids));
+  memmove(bh_val, bh_val + k - ii, ii * sizeof(*bh_val));
+  memmove(bh_ids, bh_ids + k - ii, ii * sizeof(*bh_ids));
 
-    for (; ii < k; ii++) {
-        bh_val[ii] = MAX_VALUE;
-        bh_ids[ii] = -1;
-    }
-    return nel;
+  for (; ii < k; ii++) {
+    bh_val[ii] = MAX_VALUE;
+    bh_ids[ii] = -1;
+  }
+  return nel;
 }
 
 /*---------------mutex----------------*/
@@ -315,7 +291,7 @@ __host dpu_fifo_output_t result;
 /*-----------cache------------------*/
 
 // when PQ_M=32, DSIZE=10; when PQ_M=16, DSIZE=40
-#define DSIZE 6
+#define DSIZE 8
 #define IDSIZE DSIZE
 __host DIST_TYPE lutw[LUT_SIZE];
 
@@ -323,8 +299,8 @@ __host DATA_TYPE data_wram[NR_TASKLETS * DSIZE * MY_PQ_M];
 
 __host ID_TYPE id_wram[NR_TASKLETS * IDSIZE];
 
-#define INDEX_DATA_W(i, j, k) \
-    ((i) * (DSIZE) * (MY_PQ_M) + (j) * (MY_PQ_M) + (k))
+#define INDEX_DATA_W(i, j, k)                                                  \
+  ((i) * (DSIZE) * (MY_PQ_M) + (j) * (MY_PQ_M) + (k))
 
 #define INDEX_ID_W(i, j) ((i) * (IDSIZE) + (j))
 
@@ -332,218 +308,208 @@ __host DIST_TYPE local_dis_all[NR_TASKLETS * MAX_K];
 __host ID_TYPE local_id_all[NR_TASKLETS * MAX_K];
 
 __mram uint64_t justaddtime;
+
+#define CHECK_SIZE 4
+
+
 void delay(int ms) {
-    for (int ii = 0; ii < ms * 4; ii++) {
-        for (int i = 1; i < 2; i++) {
-            for (int j = 1; j < 2; j++) {
-                int k = 3;
-                for (int l = 0; l < MY_PQ_M; l++) {
-                    justaddtime += (i + j + k + l) % 100 + ii * j * k * l % 99;
-                }
-            }
+  for (int ii = 0; ii < ms * 4; ii++) {
+    for (int i = 1; i < 2; i++) {
+      for (int j = 1; j < 2; j++) {
+        int k = 3;
+        for (int l = 0; l < MY_PQ_M; l++) {
+          justaddtime += (i + j + k + l) % 100 + ii * j * k * l % 99;
         }
+      }
     }
+  }
 }
 
 void task_perf() {
-    int t_id = me();
-    perfcounter_cycles cycles;
+  int t_id = me();
+  perfcounter_cycles cycles;
 
-    // delay(500);
-    int slot_id = query.slot_id;
+  // delay(500);
+  int slot_id = query.slot_id;
 
-    DIST_TYPE* local_dis = &local_dis_all[t_id * MAX_K];
-    ID_TYPE* local_id = &local_id_all[t_id * MAX_K];
+  DIST_TYPE *local_dis = &local_dis_all[t_id * MAX_K];
+  ID_TYPE *local_id = &local_id_all[t_id * MAX_K];
 
-    barrier_wait(&barrier);
+  barrier_wait(&barrier);
 
-    heap_heapify1(query.k, local_dis, local_id, NULL, NULL, 0);
+  heap_heapify1(query.k, local_dis, local_id, NULL, NULL, 0);
 
-    if (t_id == 0) {
-        heap_heapify1(
-                query.k, result.result_v, result.result_id, NULL, NULL, 0);
+  if (t_id == 0) {
+    heap_heapify1(query.k, result.result_v, result.result_id, NULL, NULL, 0);
+  }
+  barrier_wait(&barrier);
+
+  if (t_id == 0) {
+    for (int i = 0; i < MY_PQ_M; i++) {
+      mram_read((__mram_ptr void *)&query.LUT[i * MY_PQ_CLUSTER],
+                &lutw[i * MY_PQ_CLUSTER], MY_PQ_CLUSTER * sizeof(DIST_TYPE));
     }
-    barrier_wait(&barrier);
+  }
 
-    if (t_id == 0) {
-        for (int i = 0; i < MY_PQ_M; i++) {
-            mram_read(
-                    (__mram_ptr void*)&query.LUT[i * MY_PQ_CLUSTER],
-                    &lutw[i * MY_PQ_CLUSTER],
-                    MY_PQ_CLUSTER * sizeof(DIST_TYPE));
+  barrier_wait(&barrier);
+
+  int totallen = query.shard_l;
+
+  int chunk_size = totallen / NR_TASKLETS;
+  chunk_size = (chunk_size + 7) & ~7;
+
+  int start = t_id * chunk_size;
+  if (t_id == NR_TASKLETS - 1) {
+    chunk_size = totallen - start;
+  }
+
+  if (t_id == 0) {
+    timer_start(&cycles);
+  }
+
+  barrier_wait(&barrier);
+
+  for (int i = start; i < (start + chunk_size); i += DSIZE) {
+    int use_len = DSIZE;
+
+    if ((i + DSIZE) >= (start + chunk_size)) {
+      use_len = (start + chunk_size) - i;
+    }
+    mram_read((__mram_ptr void *)&data_id[INDEX_ID(slot_id, i)],
+              &id_wram[INDEX_ID_W(t_id, 0)], DSIZE * sizeof(ID_TYPE));
+    mram_read((__mram_ptr void *)&data[INDEX_DATA(slot_id, i, 0)],
+              &data_wram[INDEX_DATA_W(t_id, 0, 0)],
+              DSIZE * MY_PQ_M * sizeof(DATA_TYPE));
+
+    int data_wram_index = INDEX_DATA_W(t_id, 0, 0);
+    int id_wram_index = INDEX_ID_W(t_id, 0);
+
+    for (int j = 0; j < use_len; j++) {
+      ID_TYPE id = id_wram[id_wram_index + j];
+
+      DIST_TYPE sum = query.dis0;
+
+      int index_lutw = 0;
+      //   for (int l = 0; l < MY_PQ_M; l++) {
+      //     uint8_t pqcode = data_wram[data_wram_index + l];
+
+      //     sum += lutw[index_lutw + pqcode];
+      //     index_lutw += MY_PQ_CLUSTER;
+      //   }
+
+      for (int l = 0; l < MY_PQ_M; l += CHECK_SIZE) {
+        for (int check_id = 0; check_id < CHECK_SIZE; check_id++) {
+          uint8_t pqcode = data_wram[data_wram_index + l + check_id];
+          sum += lutw[index_lutw + pqcode];
+          index_lutw += MY_PQ_CLUSTER;
         }
+      }
+
+      data_wram_index += MY_PQ_M;
+
+      if (local_dis[0] > sum) {
+        heap_replace_top1(query.k, local_dis, local_id, sum, id);
+      }
     }
+  }
 
-    barrier_wait(&barrier);
+  barrier_wait(&barrier);
 
-    int totallen = query.shard_l;
+  if (me() == 0) {
+    int64_t cycle_all = timer_stop(&cycles);
+    int64_t cycle_per_vec = cycle_all / query.shard_l;
+    result.cycles = cycle_all;
+    result.cycle_per_vec = cycle_per_vec;
+  }
 
-    int chunk_size = totallen / NR_TASKLETS;
-    chunk_size = (chunk_size + 7) & ~7;
+  barrier_wait(&barrier);
 
-    int start = t_id * chunk_size;
-    if (t_id == NR_TASKLETS - 1) {
-        chunk_size = totallen - start;
-    }
+  /*-----------merge----------*/
+  if (t_id == 0) {
+    DIST_TYPE *simi_values = result.result_v;
+    ID_TYPE *simi_ids = result.result_id;
 
-    if (t_id == 0) {
-        timer_start(&cycles);
-    }
-
-    barrier_wait(&barrier);
-
-    for (int i = start; i < (start + chunk_size); i += DSIZE) {
-        int use_len = DSIZE;
-
-        if ((i + DSIZE) >= (start + chunk_size)) {
-            use_len = (start + chunk_size) - i;
-        }
-        mram_read(
-                (__mram_ptr void*)&data_id[INDEX_ID(slot_id, i)],
-                &id_wram[INDEX_ID_W(t_id, 0)],
-                DSIZE * sizeof(ID_TYPE));
-        mram_read(
-                (__mram_ptr void*)&data[INDEX_DATA(slot_id, i, 0)],
-                &data_wram[INDEX_DATA_W(t_id, 0, 0)],
-                DSIZE * MY_PQ_M * sizeof(DATA_TYPE));
-
-        int data_wram_index = INDEX_DATA_W(t_id, 0, 0);
-        int id_wram_index = INDEX_ID_W(t_id, 0);
-
-        for (int j = 0; j < use_len; j++) {
-            ID_TYPE id = id_wram[id_wram_index + j];
-
-            DIST_TYPE sum = query.dis0;
-
-            int index_lutw = 0;
-            for (int l = 0; l < MY_PQ_M; l++) {
-                uint8_t pqcode = data_wram[data_wram_index + l];
-
-                sum += lutw[index_lutw + pqcode];
-                index_lutw += MY_PQ_CLUSTER;
-            }
-            data_wram_index += MY_PQ_M;
-
-            if (local_dis[0] > sum) {
-                heap_replace_top1(query.k, local_dis, local_id, sum, id);
-            }
-        }
-    }
-
-    barrier_wait(&barrier);
-
-    if (me() == 0) {
-        int64_t cycle_all = timer_stop(&cycles);
-        int64_t cycle_per_vec = cycle_all / query.shard_l;
-        result.cycles = cycle_all;
-        result.cycle_per_vec = cycle_per_vec;
-    }
-
-    // if (me() == 0) {
-    //     for (int j = 0; j < totallen; j++) {
-    //         DIST_TYPE sum = query.dis0;
-    //         ID_TYPE id = data_id[INDEX_ID(slot_id, j)];
-    //         for (int l = 0; l < MY_PQ_M; l++) {
-    //             uint8_t pqcode = data[INDEX_DATA(slot_id, j, l)];
-
-    //             sum += query.LUT[l * MY_PQ_CLUSTER + pqcode];
-    //         }
-    //         if (local_dis[0] > sum) {
-    //             heap_replace_top1(query.k, local_dis, local_id, sum, id);
-    //         }
-    //     }
-    // }
-
-    barrier_wait(&barrier);
-
-    /*-----------merge----------*/
-    if (t_id == 0) {
-        DIST_TYPE* simi_values = result.result_v;
-        ID_TYPE* simi_ids = result.result_id;
-
-        for (int i = 0; i < NR_TASKLETS; i++) {
-            for (int j = 0; j < query.k; j++) {
-                if (local_dis_all[i * MAX_K + j] < simi_values[0]) {
-                    heap_replace_top1(
-                            query.k,
-                            simi_values,
-                            simi_ids,
+    for (int i = 0; i < NR_TASKLETS; i++) {
+      for (int j = 0; j < query.k; j++) {
+        if (local_dis_all[i * MAX_K + j] < simi_values[0]) {
+          heap_replace_top1(query.k, simi_values, simi_ids,
                             local_dis_all[i * MAX_K + j],
                             local_id_all[i * MAX_K + j]);
-                }
-            }
         }
-
-        result.k = query.k;
-        result.q_id = query.q_id;
-        result.dpu_id = query.dpu_id;
+      }
     }
 
-    barrier_wait(&barrier);
+    result.k = query.k;
+    result.q_id = query.q_id;
+    result.dpu_id = query.dpu_id;
+  }
+
+  barrier_wait(&barrier);
 }
 
 void kernel_ann() {
-    int t_id = me();
+  int t_id = me();
 
-    while (true) {
-        if (!is_input_fifo_empty(&input_fifo)) {
-            if (!is_output_fifo_full(&output_fifo)) {
-                barrier_wait(&barrier);
+  while (true) {
+    if (!is_input_fifo_empty(&input_fifo)) {
+      if (!is_output_fifo_full(&output_fifo)) {
+        barrier_wait(&barrier);
 
-                uint32_t* input_data = (uint32_t*)input_fifo_peek(&input_fifo);
+        uint32_t *input_data = (uint32_t *)input_fifo_peek(&input_fifo);
 
-                assert(input_data[0] ==
-                       dpu_info_common.dpu_id + OFFSET_INPUT_FIFO);
+        assert(input_data[0] == dpu_info_common.dpu_id + OFFSET_INPUT_FIFO);
 
-                barrier_wait(&barrier);
+        barrier_wait(&barrier);
 
-                task_perf();
+        task_perf();
 
-                barrier_wait(&barrier);
+        barrier_wait(&barrier);
 
-                if (t_id == 0) {
-                    memcpy((&output_fifo)->data,
-                           (void*)&result,
-                           sizeof(dpu_fifo_output_t));
+        if (t_id == 0) {
+          memcpy((&output_fifo)->data, (void *)&result,
+                 sizeof(dpu_fifo_output_t));
 
-                    *(int*)((&output_fifo)->data + sizeof(dpu_fifo_output_t)) =
-                            dpu_info_common.dpu_id;
+          *(int *)((&output_fifo)->data + sizeof(dpu_fifo_output_t)) =
+              dpu_info_common.dpu_id;
 
-                    output_fifo_push(&output_fifo, (&output_fifo)->data);
+          output_fifo_push(&output_fifo, (&output_fifo)->data);
 
-                    input_fifo_pop(&input_fifo);
-                }
-
-                barrier_wait(&barrier);
-            }
-        } else if (!loop) {
-            break;
+          input_fifo_pop(&input_fifo);
         }
+
+        barrier_wait(&barrier);
+      }
+    } else if (!loop) {
+      break;
     }
+  }
 }
 
 void init() {
-    query.k = 10;
-    query.shard_l = 10000;
+  query.k = 10;
+  query.shard_l = 10000;
 }
 
 int main() {
-    // delay(5000);
+  // delay(5000);
+    printf("hello dpu kernel baseline noprune\n");
 
-    // return0;
-    if (me() == 0) {
-        perfcounter_config(COUNT_CYCLES, true);
+  // return0;
+  assert(MY_PQ_M % CHECK_SIZE == 0);
+  
+  if (me() == 0) {
+    perfcounter_config(COUNT_CYCLES, true);
 
-        loop = 1;
-    }
+    loop = 1;
+  }
 
-    if (dpu_info_common.dpu_id == 452) {
-        return 0;
-    }
-
-    barrier_wait(&barrier);
-
-    kernel_ann();
-
+  if (dpu_info_common.dpu_id == 452) {
     return 0;
+  }
+
+  barrier_wait(&barrier);
+
+  kernel_ann();
+
+  return 0;
 }

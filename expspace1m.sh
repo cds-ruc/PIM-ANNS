@@ -76,42 +76,80 @@ run_single_command() {
     return $exit_code
 }
 
+
+# 定义源文件的路径（三个不同的 baseline 文件）
+files=(
+    # "dpu_kernel_baseline_noprune.c"
+    # "dpu_kernel_baseline_nocache.c"
+    "dpu_kernel_baseline_haveprune.c"
+)
+
+# 公共路径
+base_dir="/home/wupuqing/workspace/PIM-ANNS/dpu"
+
+
+    
+    
 for m0 in "${macro0_values[@]}"; do
     for m1 in "${macro1_values[@]}"; do
     
         sed -i -e "s/#define TEST_.*/${m1}/" \
-               -e "s/#define SLOT_L.*/#define SLOT_L 100000/" \
-               -e "s/#define COPY_RATE.*/#define COPY_RATE 10/" \
-               -e "s/#define MAX_COROUTINE.*/#define MAX_COROUTINE 4/" \
-               $path_common
+            -e "s/#define SLOT_L.*/#define SLOT_L 100000/" \
+            -e "s/#define COPY_RATE.*/#define COPY_RATE 10/" \
+            -e "s/#define MAX_COROUTINE.*/#define MAX_COROUTINE 4/" \
+            $path_common
 
         if [[ ${m0} == "space1M-20M-4096C.json" ]]; then
             cp ../${m0} ../config.json
 
             sed -i -e "s/#define MY_PQ_M.*/#define MY_PQ_M 20/" \
-                   -e "s/#define DIM.*/#define DIM 100/" \
-                   -e "s/#define QUERY_TYPE.*/#define QUERY_TYPE 1/" \
-                   $path_common
-
-            make -j
-            make main -j
-
-            nprobe=(1)
-            echo "Running with ${m0}"
+                -e "s/#define DIM.*/#define DIM 100/" \
+                -e "s/#define QUERY_TYPE.*/#define QUERY_TYPE 1/" \
+                $path_common
             
-            for np in "${nprobe[@]}"; do
-                
+            # 循环：依次将每个文件复制为 dpu_kernel.c
+            for file in "${files[@]}"; do
+                echo "Copying $file to dpu_kernel.c..."
+                cp "$base_dir/$file" "$base_dir/dpu_kernel.c"
 
+            
+
+                # Step 1: 修改 config.json 中的 RESULT_DIR
+                jq ".RESULT_DIR = \"${file}_SPACE1B20M4096_DIR\"" ../config.json > ../tmp.json \
+                    && mv ../tmp.json ../config.json
+
+                # Step 2: 提取新目录路径并创建目录
+                new_dir=$(grep -oP '"RESULT_DIR": "\K[^"]+' ../config.json)
+                if [ ! -d "../$new_dir" ]; then
+                    mkdir -p "../$new_dir"
+                    mkdir -p "../$new_dir/DPU_DIR"
+                    echo "Created directory: ../$new_dir"
+                else
+                    echo "Directory already exists: ../$new_dir"
+                    mkdir -p "../$new_dir/DPU_DIR"
+                fi
+                    
+
+                make -j
+                make main -j
+
+                nprobe=(10)
+                echo "Running with ${m0}"
                 
-                date +"%Y-%m-%d %H:%M:%S"
-                run_single_command "./main $np"
-                
-                echo "The command ./main $np completed successfully."
-                
+                for np in "${nprobe[@]}"; do
+                    
+
+                    
+                    date +"%Y-%m-%d %H:%M:%S"
+                    run_single_command "./main $np"
+                    
+                    echo "The command ./main $np completed successfully."
+                    
 
 
+                done
+        
             done
-    
         fi
     done
 done

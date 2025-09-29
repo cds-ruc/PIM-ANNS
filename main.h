@@ -785,7 +785,7 @@ void CPPkernel(int k = 10, int nprobe = 1)
 
     kernel_dpu_search(k, nprobe);
 
-    // DPUWrapper::GetInstance()->read_log();
+    DPUWrapper::GetInstance()->read_log();
 
 #elif defined(TEST_BATCH_DPU)
 
