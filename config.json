@@ -1,8 +1,8 @@
 {
-  "MAX_CLUSTER": 4096,
-  "RESULT_DIR": "dpu_kernel_baseline_haveprune.c_SPACE1B20M4096_DIR",
-  "INDEX_PATH": "/mnt/optane/wpq/dataset/space/index/space1B_M20_PQ8_C4096_R_L2.faissindex",
-  "QUERY_PATH": "/mnt/optane/wpq/dataset/space/query10K.i8bin",
-  "HISTORY_QUERY_PATH": "/mnt/optane/wpq/dataset/space/query10K.i8bin",
-  "GROUNDTRUTH_PATH": "/mnt/optane/wpq/dataset/space/space1B_L2_gt_k100.bin"
+    "MAX_CLUSTER": 4096,
+    "RESULT_DIR": "T2I100M100M4096_DIR",
+    "INDEX_PATH": "/home/wupuqing/t2i-100m-index-nlist4096-pqm100.ivfpq",
+    "QUERY_PATH": "/home/wupuqing/query.public.100K.fbin",
+    "HISTORY_QUERY_PATH": "/home/wupuqing/query.public.100K.fbin",
+    "GROUNDTRUTH_PATH": "/mnt/optane/wpq/dataset/space/space1B_L2_gt_k100.bin"
 }

@@ -2,19 +2,19 @@
 
 #define TEST_DPU
 
-#define MY_PQ_M 20
+#define MY_PQ_M 100
 
-#define DIM 100
+#define DIM 200
 
 //sift1B: 0
 //space1B: 1
-#define QUERY_TYPE 1
+#define QUERY_TYPE 4
 
 #define SLOT_L 100000
 
 #define COPY_RATE 10
 
-#define MAX_COROUTINE 4
+#define MAX_COROUTINE 1
 
 // set to 1 to enable replica
 #define ENABLE_REPLICA 1
@@ -24,6 +24,8 @@
 #define CHANGE_ENABLE_REPLICA 0
 
 #define ENABLE_DPU_LOAD 0
+
+#define NEED_GROUNDTRUTH 0
 
 
 

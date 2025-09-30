@@ -714,11 +714,21 @@ void DPUWrapper::dpu_init() {
   ID_TYPE *groundtruth_ids_arr =
       read_groundtruth(groundtruth_path.c_str(), nq_gt, k_gt);
 
-  assert(nq_gt >= query_num);
-  assert(k_gt >= MAX_K);
+  if (NEED_GROUNDTRUTH) {
+    assert(nq_gt >= query_num);
+    assert(k_gt >= MAX_K);
+  }
 
   for (int i = 0; i < query_num; i++) {
-    query_info[i]->ground_truth_ids = groundtruth_ids_arr + i * k_gt;
+    if (NEED_GROUNDTRUTH) {
+      query_info[i]->ground_truth_ids = groundtruth_ids_arr + i * k_gt;
+    } else {
+      ID_TYPE *arr = new ID_TYPE[MAX_K];
+      for (int j = 0; j < MAX_K; j++) {
+        arr[j] = -1;
+      }
+      query_info[i]->ground_truth_ids = arr;
+    }
   }
 
   for (int i = 0; i < query_num; i++) {
@@ -1042,7 +1052,7 @@ void DPUWrapper::level2_search(coroutine<void>::push_type &sink, int q_id,
     }
   }
 
-  if (q_id == 3 && false) {
+  if (q_id == 3) {
 
     string lut_path =
         "/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/lut.bin";
@@ -1063,7 +1073,7 @@ void DPUWrapper::level2_search(coroutine<void>::push_type &sink, int q_id,
         "/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/data.bin";
     string id_path =
         "/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/id.bin";
-    //   写入文件，从data开始数SLOT_L个数据，id也是一样
+
     std::ofstream data_file(data_path, std::ios::binary);
     std::ofstream id_file(id_path, std::ios::binary);
     if (data_file.is_open() && id_file.is_open()) {
@@ -1071,7 +1081,7 @@ void DPUWrapper::level2_search(coroutine<void>::push_type &sink, int q_id,
       int s_id = 0; // 这里假设我们读取的是第0个shard
       DATA_TYPE *data = getdata(c_id, s_id);
       ID_TYPE *ids = getids(c_id, s_id);
-      int align8 = (SLOT_L + 7) & ~7;
+      int align8 = (SLOT_L / 10 + 7) & ~7;
       data_file.write(reinterpret_cast<const char *>(data),
                       sizeof(DATA_TYPE) * align8 * MY_PQ_M);
       id_file.write(reinterpret_cast<const char *>(ids),

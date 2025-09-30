@@ -33,7 +33,6 @@ set(HOST_SOURCES
 
 set(DPU_SOURCES
     ${DPU_DIR}/dpu_kernel.c
-    # ${DPU_DIR}/dpu_kernel_bigM.c
 )
 
 set(BATCH_DPU_SOURCES
@@ -104,7 +103,7 @@ target_include_directories(dpu_lib PUBLIC ${SDK_SRC_DIR}/)
 target_sources(dpu_lib PUBLIC ${COMMON_SOURCES})
 
 add_dependencies(dpu_lib dpu_adc_code)
-add_dependencies(dpu_lib batch_dpu_adc_code)
+# add_dependencies(dpu_lib batch_dpu_adc_code)
 
 
 add_executable(main EXCLUDE_FROM_ALL main.cpp)

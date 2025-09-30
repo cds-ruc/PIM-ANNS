@@ -70,9 +70,9 @@ run_single_command() {
 
 
 files=(
-    # "dpu_kernel_baseline_noprune.c"
+    "dpu_kernel_baseline_noprune.c"
     # "dpu_kernel_baseline_nocache.c"
-    "dpu_kernel_baseline_haveprune.c"
+    # "dpu_kernel_baseline_haveprune.c"
 )
 
 # 公共路径
@@ -124,8 +124,8 @@ for m0 in "${macro0_values[@]}"; do
                 make -j
                 make main -j
 
-                # nprobe=(4 5 8 11 21 71)
-                nprobe=(11)
+                nprobe=(4 5 8 11 21 71)
+                # nprobe=(11)
                 echo "Running with ${m0}"
                 
                 for np in "${nprobe[@]}"; do

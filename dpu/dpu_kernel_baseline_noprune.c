@@ -385,7 +385,8 @@ void task_perf() {
     int id_wram_index = INDEX_ID_W(t_id, 0);
 
     for (int j = 0; j < use_len; j++) {
-      ID_TYPE id = id_wram[id_wram_index + j];
+      // ID_TYPE id = id_wram[id_wram_index + j];
+      ID_TYPE id = data_id[INDEX_ID(slot_id, i + j)];
 
       DIST_TYPE sum = query.dis0;
 
@@ -400,6 +401,8 @@ void task_perf() {
       for (int l = 0; l < MY_PQ_M; l += CHECK_SIZE) {
         for (int check_id = 0; check_id < CHECK_SIZE; check_id++) {
           uint8_t pqcode = data_wram[data_wram_index + l + check_id];
+          // uint8_t pqcode = data[INDEX_DATA(slot_id, i + j, l + check_id)];
+
           sum += lutw[index_lutw + pqcode];
           index_lutw += MY_PQ_CLUSTER;
         }
@@ -441,6 +444,7 @@ void task_perf() {
 
     result.k = query.k;
     result.q_id = query.q_id;
+    result.c_id = query.c_id;
     result.dpu_id = query.dpu_id;
   }
 

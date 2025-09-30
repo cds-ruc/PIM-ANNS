@@ -435,6 +435,7 @@ void task_perf() {
 
     result.k = query.k;
     result.q_id = query.q_id;
+    result.c_id = query.c_id;
     result.dpu_id = query.dpu_id;
   }
 

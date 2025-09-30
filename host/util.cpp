@@ -4,167 +4,162 @@
 // type==0: sift1b
 // type==1: space
 // type==2: sift1m
-float *read_query(
-    const char *filename,
-    int type,
-    int &nvecs,
-    int &dim)
-{
-    
-    printf("query path is %s\n", filename);
-    if (type == 0)
-    {
-        FILE *f = fopen(filename, "rb");
-        if (!f)
-        {
-            perror("Error opening file");
-            return NULL;
-        }
+float *read_query(const char *filename, int type, int &nvecs, int &dim) {
 
-        assert(fread(&nvecs, sizeof(int), 1, f) == 1);
-        assert(fread(&dim, sizeof(int), 1, f) == 1);
-
-        int total_elements = nvecs * dim;
-        uint8_t *int_data = new uint8_t[total_elements]();
-
-        assert(fread(int_data, sizeof(uint8_t), total_elements, f) ==
-               total_elements);
-
-        fclose(f);
-
-        float *float_data = new float[total_elements]();
-        for (int i = 0; i < total_elements; i++)
-        {
-            float_data[i] = (float)int_data[i];
-        }
-
-        free(int_data);
-
-        return float_data;
+  printf("query path is %s\n", filename);
+  if (type == 0) {
+    FILE *f = fopen(filename, "rb");
+    if (!f) {
+      perror("Error opening file");
+      return NULL;
     }
-    else if (type == 1)
-    {
-       
-        FILE *f = fopen(filename, "rb");
-        if (!f)
-        {
-            perror("Error opening file");
-            return NULL;
-        }
 
-        assert(fread(&nvecs, sizeof(int), 1, f) == 1);
-        assert(fread(&dim, sizeof(int), 1, f) == 1);
+    assert(fread(&nvecs, sizeof(int), 1, f) == 1);
+    assert(fread(&dim, sizeof(int), 1, f) == 1);
 
-        int total_elements = nvecs * dim;
-        int8_t *int_data = new int8_t[total_elements]();
-        assert(fread(int_data, sizeof(int8_t), total_elements, f) ==
-               total_elements);
+    int total_elements = nvecs * dim;
+    uint8_t *int_data = new uint8_t[total_elements]();
 
-        fclose(f);
+    assert(fread(int_data, sizeof(uint8_t), total_elements, f) ==
+           total_elements);
 
-        float *float_data = new float[total_elements]();
-        for (int i = 0; i < total_elements; i++)
-        {
-            float_data[i] = (float)int_data[i];
-        }
+    fclose(f);
 
-        free(int_data);
-
-        return float_data;
+    float *float_data = new float[total_elements]();
+    for (int i = 0; i < total_elements; i++) {
+      float_data[i] = (float)int_data[i];
     }
-    else if (type == 2)
-    {
-        std::ifstream infile;
-        infile.open(filename, std::ios::binary);
-        std::vector<std::vector<float>> vectors;
 
-        int nq = 0;
-        int dim_ = 128;
+    free(int_data);
 
-        while (infile)
-        {
-            // Read dimension
-            int dim;
-            infile.read(reinterpret_cast<char *>(&dim), sizeof(int));
-            if (!infile)
-                break;
-            assert(dim == dim_);
+    return float_data;
+  } else if (type == 1) {
 
-            // Read vector data
-            std::vector<float> vec(dim);
-            infile.read(reinterpret_cast<char *>(vec.data()), dim * sizeof(float));
-            vectors.push_back(vec);
-            nq++;
-        }
-
-        float *float_data = new float[nq * dim_]();
-        for (int i = 0; i < nq; i++)
-        {
-            for (int j = 0; j < dim_; j++)
-            {
-                float_data[i * dim_ + j] = vectors[i][j];
-            }
-        }
-
-        infile.close();
-
-        return float_data;
+    FILE *f = fopen(filename, "rb");
+    if (!f) {
+      perror("Error opening file");
+      return NULL;
     }
-    else {
-        fprintf(stderr, "Error: Invalid type %d\n", type);
-        return nullptr;  
+
+    assert(fread(&nvecs, sizeof(int), 1, f) == 1);
+    assert(fread(&dim, sizeof(int), 1, f) == 1);
+
+    int total_elements = nvecs * dim;
+    int8_t *int_data = new int8_t[total_elements]();
+    assert(fread(int_data, sizeof(int8_t), total_elements, f) ==
+           total_elements);
+
+    fclose(f);
+
+    float *float_data = new float[total_elements]();
+    for (int i = 0; i < total_elements; i++) {
+      float_data[i] = (float)int_data[i];
     }
+
+    free(int_data);
+
+    return float_data;
+  } else if (type == 2) {
+    std::ifstream infile;
+    infile.open(filename, std::ios::binary);
+    std::vector<std::vector<float>> vectors;
+
+    int nq = 0;
+    int dim_ = 128;
+
+    while (infile) {
+      // Read dimension
+      int dim;
+      infile.read(reinterpret_cast<char *>(&dim), sizeof(int));
+      if (!infile)
+        break;
+      assert(dim == dim_);
+
+      // Read vector data
+      std::vector<float> vec(dim);
+      infile.read(reinterpret_cast<char *>(vec.data()), dim * sizeof(float));
+      vectors.push_back(vec);
+      nq++;
+    }
+
+    float *float_data = new float[nq * dim_]();
+    for (int i = 0; i < nq; i++) {
+      for (int j = 0; j < dim_; j++) {
+        float_data[i * dim_ + j] = vectors[i][j];
+      }
+    }
+
+    infile.close();
+
+    return float_data;
+  } else if (type == 4) // 新增 type 4：二进制浮点格式
+  {
+    FILE *f = fopen(filename, "rb");
+    if (!f) {
+      perror("Error opening file");
+      return NULL;
+    }
+
+    // 读取向量数量和维度
+    assert(fread(&nvecs, sizeof(int), 1, f) == 1);
+    assert(fread(&dim, sizeof(int), 1, f) == 1);
+
+    // 计算总元素数
+    int total_elements = nvecs * dim;
+
+    // 直接分配浮点数组
+    float *float_data = new float[total_elements]();
+
+    // 一次性读取所有浮点数据
+    assert(fread(float_data, sizeof(float), total_elements, f) ==
+           total_elements);
+
+    fclose(f);
+
+    return float_data;
+  } else {
+    fprintf(stderr, "Error: Invalid type %d\n", type);
+    return nullptr;
+  }
 }
 
+ID_TYPE *read_groundtruth(const char *filename, int &n, int &k) {
+  FILE *file = fopen(filename, "rb");
+  if (!file) {
+    perror("Failed to open file");
+    return NULL;
+  }
 
-ID_TYPE *read_groundtruth(const char *filename, int &n, int &k)
-{
-    FILE *file = fopen(filename, "rb");
-    if (!file)
-    {
-        perror("Failed to open file");
-        return NULL;
-    }
-
-    if (fread(&n, sizeof(int), 1, file) != 1 ||
-        fread(&k, sizeof(int), 1, file) != 1)
-    {
-        perror("Failed to read n or k");
-        fclose(file);
-        return NULL;
-    }
-
-  
-    int *data = (int *)malloc(n * k * sizeof(int));
-    if (!data)
-    {
-        perror("Failed to allocate memory");
-        fclose(file);
-        return NULL;
-    }
-
-   
-    for (int i = 0; i < n; i++)
-    {
-       
-        if (fread(&data[i * k], sizeof(int), k, file) != k)
-        {
-            perror("Failed to read data");
-            free(data);
-            fclose(file);
-            return NULL;
-        }
-    }
-
-   
-    ID_TYPE *data_id = new ID_TYPE[n * k];
-    for (int i = 0; i < n * k; i++)
-    {
-        data_id[i] = data[i];
-    }
-
-  
+  if (fread(&n, sizeof(int), 1, file) != 1 ||
+      fread(&k, sizeof(int), 1, file) != 1) {
+    perror("Failed to read n or k");
     fclose(file);
+    return NULL;
+  }
 
-    return data_id;
+  int *data = (int *)malloc(n * k * sizeof(int));
+  if (!data) {
+    perror("Failed to allocate memory");
+    fclose(file);
+    return NULL;
+  }
+
+  for (int i = 0; i < n; i++) {
+
+    if (fread(&data[i * k], sizeof(int), k, file) != k) {
+      perror("Failed to read data");
+      free(data);
+      fclose(file);
+      return NULL;
+    }
+  }
+
+  ID_TYPE *data_id = new ID_TYPE[n * k];
+  for (int i = 0; i < n * k; i++) {
+    data_id[i] = data[i];
+  }
+
+  fclose(file);
+
+  return data_id;
 }

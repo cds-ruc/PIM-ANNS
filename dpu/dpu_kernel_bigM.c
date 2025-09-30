@@ -451,6 +451,7 @@ void task_perf() {
     // 填充结果元数据
     result.k = query.k;
     result.q_id = query.q_id;
+    result.c_id = query.c_id;
     result.dpu_id = query.dpu_id;
   }
   barrier_wait(&barrier);
