@@ -338,6 +338,15 @@ void task_perf() {
   if (t_id == 0) {
     heap_heapify1(query.k, result.result_v, result.result_id, NULL, NULL, 0);
   }
+  
+
+  if (t_id == 0) {
+    for (int i = 0; i < MY_PQ_M; i++) {
+      mram_read((__mram_ptr void *)&query.LUT[i * MY_PQ_CLUSTER],
+                &lutw[i * MY_PQ_CLUSTER], MY_PQ_CLUSTER * sizeof(DIST_TYPE));
+    }
+  }
+
   barrier_wait(&barrier);
 
   int totallen = query.shard_l;
@@ -373,7 +382,8 @@ void task_perf() {
 
         uint8_t pqcode = data[INDEX_DATA(slot_id, i + j, l)];
 
-        sum += query.LUT[l * MY_PQ_CLUSTER + pqcode];
+        // sum += query.LUT[l * MY_PQ_CLUSTER + pqcode];
+        sum += lutw[l * MY_PQ_CLUSTER + pqcode];
       }
 
       if (local_dis[0] > sum) {

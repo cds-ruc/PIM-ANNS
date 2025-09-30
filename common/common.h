@@ -43,6 +43,7 @@ typedef struct dpu_fifo_output_t
 
     int k;
     int q_id;
+    int c_id;
     int dpu_id;
     uint64_t cycles;
     int64_t cycle_per_vec;
@@ -52,6 +53,10 @@ typedef struct dpu_fifo_output_t
 
     uint64_t dis;
     uint64_t sort;
+
+    uint64_t count_exit;
+
+
 
 } __attribute__((aligned(8))) dpu_fifo_output_t;
 

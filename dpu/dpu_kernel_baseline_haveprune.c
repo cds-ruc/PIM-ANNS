@@ -324,11 +324,12 @@ void delay(int ms) {
 
 __host DIST_TYPE best_value = 0;
 
-#define PRE_COMPUTE 20000
+// #define PRE_COMPUTE 20000
+__host int PRE_COMPUTE = 0;
 
 int32_t count_exit = 0;
 
-#define CHECK_SIZE 4
+#define CHECK_SIZE 10
 
 void task_perf() {
   int t_id = me();
@@ -346,6 +347,8 @@ void task_perf() {
 
   if (t_id == 0) {
     heap_heapify1(query.k, result.result_v, result.result_id, NULL, NULL, 0);
+    PRE_COMPUTE = query.shard_l * 0.2;    // 预计算20%
+    PRE_COMPUTE = (PRE_COMPUTE + 7) & ~7; // 向上取整到8的倍数
   }
   barrier_wait(&barrier);
 
@@ -430,11 +433,7 @@ void task_perf() {
       if (result.result_v[j] < best_value) {
         best_value = result.result_v[j];
       }
-    //   printf("result_v[%d]=%d, result_id[%d]=%lld\n", j, result.result_v[j], j,
-    //          result.result_id[j]);
     }
-
-    // printf("best_value=%d\n", best_value);
   }
 
   if (t_id == 0) {
@@ -445,16 +444,15 @@ void task_perf() {
 
   // ========= use a best value ===============
 
-  totallen = SLOT_L - PRE_COMPUTE;
+  totallen = query.shard_l - PRE_COMPUTE;
   chunk_size = totallen / NR_TASKLETS;
   chunk_size = (chunk_size + 7) & ~7; // 对齐到8的倍数
 
   start = t_id * chunk_size + PRE_COMPUTE;
   if (t_id == NR_TASKLETS - 1) {
-    chunk_size = SLOT_L - start; // 最后一个线程处理剩余数据
+    chunk_size = query.shard_l - start; // 最后一个线程处理剩余数据
   }
 
-//   printf("start=%d, chunk_size=%d\n", start, chunk_size);
 
   barrier_wait(&barrier);
 
@@ -480,19 +478,24 @@ void task_perf() {
 
       int index_lutw = 0;
 
+      bool pruned = false;
+
       for (int l = 0; l < MY_PQ_M; l += CHECK_SIZE) {
+        if (sum > best_value) {
+          count_exit++;
+          pruned = true;
+          break;
+        }
         for (int check_id = 0; check_id < CHECK_SIZE; check_id++) {
           uint8_t pqcode = data_wram[data_wram_index + l + check_id];
           sum += lutw[index_lutw + pqcode];
           index_lutw += MY_PQ_CLUSTER;
         }
-        if (sum > best_value) {
-          //   count_exit++;
-          break;
-        }
       }
-
       data_wram_index += MY_PQ_M;
+      if (pruned) {
+        continue;
+      }
 
       if (local_dis[0] > sum) {
         heap_replace_top1(K_TASKLET, local_dis, local_id, sum, id);
@@ -500,11 +503,16 @@ void task_perf() {
     }
   }
 
+  barrier_wait(&barrier);
+
+
   if (me() == 0) {
     int64_t cycle_all = timer_stop(&cycles);
     int64_t cycle_per_vec = cycle_all / query.shard_l;
     result.cycles = cycle_all;
     result.cycle_per_vec = cycle_per_vec;
+    result.count_exit = count_exit;
+    count_exit = 0;
   }
 
   barrier_wait(&barrier);
@@ -526,6 +534,7 @@ void task_perf() {
 
     result.k = query.k;
     result.q_id = query.q_id;
+    result.c_id = query.c_id;
     result.dpu_id = query.dpu_id;
   }
 

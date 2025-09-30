@@ -223,6 +223,8 @@ typedef struct QUERY_INFO
 
         int q_id;
 
+        std::unordered_map<int, DIST_TYPE> min_lut_sum_map;
+
         /*----------timer--------*/
         std::chrono::time_point<std::chrono::steady_clock> start_;
         std::chrono::time_point<std::chrono::steady_clock> end_;
