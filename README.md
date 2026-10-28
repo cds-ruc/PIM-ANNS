@@ -25,15 +25,21 @@ Our per-PU query dispatching will dispatch this query to the replica on `PU_1`.
 ### Directory structure
 
 ```
-common/              # shared files for both DPU and host programs
-dpu/                 # DPU kernel functions
-host/                # host programs interacting with DPU kernels
-third-party/
-   ├── upmem-2024.2.0-Linux-x86_64/  # modified UPMEM-SDK
-   └── faiss_upmem/                  # modified FAISS
-AE/                  # original system experiment scripts
-experiments/single-task/ # TOS single-PU microbenchmarks
-main.cpp             # main program entry point
+common/                 # shared DPU and host definitions
+dpu/                    # DPU kernels
+host/                   # host implementation
+configs/                # dataset and workload presets
+experiments/
+   ├── system/          # TOS system experiment scripts
+   ├── single-task/     # TOS single-PU microbenchmarks
+   └── analysis/        # system log analysis and CSV data
+AE/                     # original system experiment scripts
+utils/                  # dataset preparation utilities
+third-party/            # modified UPMEM SDK, FAISS and pybind11
+figures/                # README illustrations
+config.json             # active runtime configuration
+main.cpp, main.h        # main program
+CMakeLists.txt          # build configuration
 ```
 
 ## 🛠️ Environment Setup
@@ -98,7 +104,7 @@ Dataset preparation sources are in `utils/`, including `train_sift1B.cpp`. Confi
 
 ### Dataset configuration
 
-Modify `config.json` to point to your local dataset and index paths when running `build/main` directly. Experiment scripts overwrite it from their selected preset, so configure that preset instead. Example presets are provided in the repository root (e.g., `space1M-20M-4096C.json`, `space1B-20M-4096C.json`, `sift1B-32M-4096C.json`).
+Modify `config.json` to point to your local dataset and index paths when running `build/main` directly. Experiment scripts overwrite it from their selected preset, so configure that preset instead. Example presets are provided in `configs/` (e.g., `configs/space1M-20M-4096C.json`, `configs/space1B-20M-4096C.json`, `configs/sift1B-32M-4096C.json`).
 
 ```json
 {
@@ -153,21 +159,29 @@ searching SPACE1M, nprobe = 11
 The command ./main 11 completed successfully.
 ```
 
-The script locates the repository automatically and copies `space1M-20M-4096C.json` to `config.json`. Configure that preset before running. It rebuilds the program and replaces the previous `SPACE1M20M4096_DIR` results.
+The script locates the repository automatically and copies `configs/space1M-20M-4096C.json` to `config.json`. Configure that preset before running. It rebuilds the program and replaces the previous `SPACE1M20M4096_DIR` results.
 
 ## 🔬 TOS Experiments
 
-Configure dataset/index paths in the JSON preset selected by each script before running; `/path/to/datasets/...` entries are placeholders. Scripts locate the repository from their own location, so no `PROJECT_ROOT` edit is needed. Run them with Bash, for example `bash expDynamic.sh`. They modify `config.json`, build-time headers and, for kernel comparisons, kernel sources. Run one experiment at a time on a configured UPMEM machine; some AE scripts replace previous result directories.
+Configure dataset/index paths in the JSON preset selected by each script before running; `/path/to/datasets/...` entries are placeholders. Scripts locate the repository from their own location, so no `PROJECT_ROOT` edit is needed. System scripts are under `experiments/system/`. Run them with Bash, for example `bash experiments/system/expDynamic.sh`. They modify `config.json`, build-time headers and, for kernel comparisons, kernel sources. Run one experiment at a time on a configured UPMEM machine; some AE scripts replace previous result directories.
 
 | Experiment | Entry points |
 |---|---|
-| Dynamic versus static load adjustment | `expDynamic.sh`, `expStatic.sh` |
-| CPU front-end / back-end threads | `expspace1b_front_thread.sh`, `expspace1b_back_thread.sh` |
-| Number of PUs | `expspace1b_num_dpu.sh` |
-| Slice size | `expspace1bslice.sh` |
-| Cache size / tasklet count / kernel variants | `expspace1b_cache_size.sh`, `expspace1b_dpu_thread.sh`, `expspace1b_kernel.sh` |
-| T2I dataset | `expT2I100M.sh` |
+| Dynamic versus static load adjustment | `experiments/system/expDynamic.sh`, `experiments/system/expStatic.sh` |
+| CPU front-end / back-end threads | `experiments/system/expspace1b_front_thread.sh`, `experiments/system/expspace1b_back_thread.sh` |
+| Number of PUs | `experiments/system/expspace1b_num_dpu.sh` |
+| Slice size | `experiments/system/expspace1bslice.sh` |
+| Cache size / tasklet count / kernel variants | `experiments/system/expspace1b_cache_size.sh`, `experiments/system/expspace1b_dpu_thread.sh`, `experiments/system/expspace1b_kernel.sh` |
+| T2I dataset | `experiments/system/expT2I100M.sh` |
 | PU optimizations and parameter sensitivity | `experiments/single-task/run_tech_m.sh`, `run_tech_topk.sh`, `run_dsize.sh`, `run_check_size.sh`, `run_pre_size.sh` (all in the same directory) |
+
+System analysis scripts are in `experiments/analysis/`, with existing CSV data in `experiments/analysis/data/`. They locate experiment logs under the repository root and write CSVs back to `data/`; generated plots go to `experiments/analysis/results/`. For example:
+
+```bash
+python3 experiments/analysis/cache_size.py
+```
+
+`cache_size.py` reuses its existing CSV when present; the other extractors read experiment logs and may overwrite their CSV outputs. Keep wanted results before rerunning analysis.
 
 See the [single-PU microbenchmark guide](experiments/single-task/README.md) for binary input formats, commands and the missing CHECK_SIZE templates. The `checksum/dpu/*.txt` files are kernel source templates.
 

@@ -21,7 +21,7 @@ path_common="$PROJECT_ROOT/common/dataset.h"
 
 # ======================= #EXP8 DPU + CPU ================================
 
-cp "$PROJECT_ROOT/space1M-20M-4096C.json" "$PROJECT_ROOT/config.json"
+cp "$PROJECT_ROOT/configs/space1M-20M-4096C.json" "$PROJECT_ROOT/config.json"
 
 
 sed -i \

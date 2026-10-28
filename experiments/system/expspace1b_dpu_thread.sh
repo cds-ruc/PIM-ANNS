@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/." && pwd)" || exit 1
+PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)" || exit 1
 cd "$PROJECT_ROOT" || exit 1
 
 
@@ -19,6 +19,10 @@ fi
 cd "$PROJECT_ROOT/build" || exit 1
 
 path_common="$PROJECT_ROOT/common/dataset.h"
+
+path_dpu_kernel="$PROJECT_ROOT/dpu/dpu_kernel.c"
+
+path_cmake="$PROJECT_ROOT/CMakeLists.txt"
 
 # init config
 sed -i \
@@ -43,8 +47,7 @@ macro0_values=("space1B-20M-4096C.json")
 macro1_values=("#define TEST_DPU" )
 
 
-
-
+dpu_thread_values=(10)
 
 run_single_command() {
     local cmd="$1"
@@ -62,7 +65,7 @@ run_single_command() {
 
 run_single_command() {
     local cmd="$1"
-    local max_test=1
+    local max_test=10
     local i=0
     local exit_code=0
 
@@ -88,7 +91,7 @@ for m0 in "${macro0_values[@]}"; do
                $path_common
 
         if [[ ${m0} == "space1B-20M-4096C.json" ]]; then
-            cp ../${m0} ../config.json
+            cp "$PROJECT_ROOT/configs/${m0}" "$PROJECT_ROOT/config.json"
 
             sed -i -e "s/#define MY_PQ_M.*/#define MY_PQ_M 20/" \
                    -e "s/#define DIM.*/#define DIM 100/" \
@@ -96,25 +99,51 @@ for m0 in "${macro0_values[@]}"; do
                    $path_common
             
 
-        
-            make -j
-            make main -j
+            for dpu_thread in "${dpu_thread_values[@]}"; do
+                # 1. Update macro definitions
+              
+                sed -i \
+                    -e "s|set(DPU_FLAGS -DNR_TASKLETS=.*|set(DPU_FLAGS -DNR_TASKLETS=${dpu_thread})|" \
+                    $path_cmake
 
-            nprobe=(1)
-            echo "Running with ${m0}"
+                # Step 1: update RESULT_DIR in config.json
+                jq ".RESULT_DIR = \"DPU_THREAD_${dpu_thread}_SPACE1B20M4096_DIR\"" ../config.json > ../tmp.json \
+                    && mv ../tmp.json ../config.json
+
+                # Step 2: extract the output directory path and create it
+                new_dir=$(grep -oP '"RESULT_DIR": "\K[^"]+' ../config.json)
+                if [ ! -d "../$new_dir" ]; then
+                    mkdir -p "../$new_dir"
+                    mkdir -p "../$new_dir/DPU_DIR"
+                    echo "Created directory: ../$new_dir"
+                else
+                    echo "Directory already exists: ../$new_dir"
+                    mkdir -p "../$new_dir/DPU_DIR"
+                fi
             
-            for np in "${nprobe[@]}"; do
-            
-                
-                date +"%Y-%m-%d %H:%M:%S"
-                run_single_command "./main $np"
-                
-                echo "The command ./main $np completed successfully."
-                
+                cd "$PROJECT_ROOT"
+                rm -rf build && cmake -B build . 
+                cd build
 
+                make -j
+                make main -j
 
+                nprobe=(5)
+                echo "Running with ${m0}"
+                
+                for np in "${nprobe[@]}"; do
+                    
+
+                    
+                    date +"%Y-%m-%d %H:%M:%S"
+                    run_single_command "./main $np"
+                    
+                    echo "The command ./main $np completed successfully."
+                    
+                    
+
+                done
             done
-          
         fi
     done
 done

@@ -1,3 +1,8 @@
+from pathlib import Path
+
+ANALYSIS_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = ANALYSIS_DIR.parents[1]
+
 import os
 import pandas as pd
 import re
@@ -26,7 +31,7 @@ for dir_num in dir_numbers:
     dir_path = base_dir_pattern.format(dir_num)
     
     for nprobe in nprobes:
-        file_path = dir_path + dpu_file_pattern.format(nprobe)
+        file_path = str(PROJECT_ROOT / dir_path) + dpu_file_pattern.format(nprobe)
         
         if os.path.exists(file_path):
             try:
@@ -81,7 +86,7 @@ if all_data:
     print(f"nprobe configurations: {df['nprobe'].nunique()}")
     
     # Save to CSV
-    csv_path = "extracted_performance_data.csv"
+    csv_path = str(ANALYSIS_DIR / "data" / "extracted_performance_data.csv")
     df.to_csv(csv_path, index=False)
     print(f"\nData saved to {csv_path}")
     
@@ -100,7 +105,7 @@ for dir_num in dir_numbers:
     missing_files = []
     
     for nprobe in nprobes:
-        file_path = dir_path + dpu_file_pattern.format(nprobe)
+        file_path = str(PROJECT_ROOT / dir_path) + dpu_file_pattern.format(nprobe)
         if not os.path.exists(file_path):
             missing_files.append(f"nprobe{nprobe}")
     

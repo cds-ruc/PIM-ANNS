@@ -1,3 +1,8 @@
+from pathlib import Path
+
+ANALYSIS_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = ANALYSIS_DIR.parents[1]
+
 import os
 import pandas as pd
 import re
@@ -18,7 +23,7 @@ for slot in slot_values:
     dir_path = base_dir_pattern.format(slot)
     
     for nprobe in nprobes:
-        file_path = dir_path + dpu_file_pattern.format(nprobe)
+        file_path = str(PROJECT_ROOT / dir_path) + dpu_file_pattern.format(nprobe)
         
         if os.path.exists(file_path):
             try:
@@ -57,7 +62,7 @@ if all_data:
     df = df.sort_values(by=['slot_size', 'nprobe'])
     
     # Save results
-    output_file = "slot_performance_data.csv"
+    output_file = str(ANALYSIS_DIR / "data" / "slot_performance_data.csv")
     df.to_csv(output_file, index=False)
     print(f"Data saved to {output_file}")
     

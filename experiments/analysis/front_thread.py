@@ -1,3 +1,8 @@
+from pathlib import Path
+
+ANALYSIS_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = ANALYSIS_DIR.parents[1]
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
@@ -20,7 +25,7 @@ def extract_data():
         dir_path = base_dir_pattern.format(thread)
         
         for nprobe in nprobes:
-            file_path = dir_path + dpu_file_pattern.format(nprobe)
+            file_path = str(PROJECT_ROOT / dir_path) + dpu_file_pattern.format(nprobe)
             
             if os.path.exists(file_path):
                 try:
@@ -58,7 +63,7 @@ def extract_data():
     print("\nFirst five rows:")
     print(df.head())
     
-    df.to_csv("thread_performance.csv", index=False)
+    df.to_csv(str(ANALYSIS_DIR / "data" / "thread_performance.csv"), index=False)
     return df
 
 def extract_metric(content, metric_name):

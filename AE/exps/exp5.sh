@@ -64,7 +64,7 @@ run_single_command() {
 
 # ======================= #EXP5(a) ================================
 
-cp "$PROJECT_ROOT/space1B-20M-4096C.json" "$PROJECT_ROOT/config.json"
+cp "$PROJECT_ROOT/configs/space1B-20M-4096C.json" "$PROJECT_ROOT/config.json"
 
 
 
@@ -131,7 +131,7 @@ sed -i \
 
 # ======================= #EXP5(b) ================================
 
-cp "$PROJECT_ROOT/space1B-20M-4096C.json" "$PROJECT_ROOT/config.json"
+cp "$PROJECT_ROOT/configs/space1B-20M-4096C.json" "$PROJECT_ROOT/config.json"
 
 
 macro0_values=("#define COPY_RATE 1.5" "#define COPY_RATE 2" "#define COPY_RATE 2.5" "#define COPY_RATE 3" "#define COPY_RATE 3.5")

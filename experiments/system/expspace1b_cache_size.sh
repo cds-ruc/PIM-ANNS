@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
-PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/." && pwd)" || exit 1
+PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)" || exit 1
 cd "$PROJECT_ROOT" || exit 1
 
 
+
+
+if [ ! -d "$PROJECT_ROOT/SPACE1B20M4096_DIR/DPU_DIR" ]; then
+    mkdir -p "$PROJECT_ROOT/SPACE1B20M4096_DIR/DPU_DIR"
+fi
 
 
 # ===================== 1: RUN EXP ====================================
@@ -14,6 +19,8 @@ cd "$PROJECT_ROOT" || exit 1
 cd "$PROJECT_ROOT/build" || exit 1
 
 path_common="$PROJECT_ROOT/common/dataset.h"
+
+path_dpu_kernel="$PROJECT_ROOT/dpu/dpu_kernel.c"
 
 # init config
 sed -i \
@@ -38,6 +45,8 @@ macro0_values=("space1B-20M-4096C.json")
 macro1_values=("#define TEST_DPU" )
 
 
+cache_size_values=(6)
+
 run_single_command() {
     local cmd="$1"
     local exit_code=0
@@ -54,7 +63,7 @@ run_single_command() {
 
 run_single_command() {
     local cmd="$1"
-    local max_test=1
+    local max_test=10
     local i=0
     local exit_code=0
 
@@ -70,45 +79,32 @@ run_single_command() {
     return $exit_code
 }
 
-
-files=(
-    "dpu_kernel_baseline_noprune.c"
-    # "dpu_kernel_baseline_nocache.c"
-    # "dpu_kernel_baseline_haveprune.c"
-)
-
-# Shared paths
-base_dir="$PROJECT_ROOT/dpu"
-
-
-    
-    
 for m0 in "${macro0_values[@]}"; do
     for m1 in "${macro1_values[@]}"; do
     
         sed -i -e "s/#define TEST_.*/${m1}/" \
-            -e "s/#define SLOT_L.*/#define SLOT_L 100000/" \
-            -e "s/#define COPY_RATE.*/#define COPY_RATE 10/" \
-            -e "s/#define MAX_COROUTINE.*/#define MAX_COROUTINE 4/" \
-            $path_common
+               -e "s/#define SLOT_L.*/#define SLOT_L 100000/" \
+               -e "s/#define COPY_RATE.*/#define COPY_RATE 10/" \
+               -e "s/#define MAX_COROUTINE.*/#define MAX_COROUTINE 4/" \
+               $path_common
 
         if [[ ${m0} == "space1B-20M-4096C.json" ]]; then
-            cp ../${m0} ../config.json
+            cp "$PROJECT_ROOT/configs/${m0}" "$PROJECT_ROOT/config.json"
 
             sed -i -e "s/#define MY_PQ_M.*/#define MY_PQ_M 20/" \
-                -e "s/#define DIM.*/#define DIM 100/" \
-                -e "s/#define QUERY_TYPE.*/#define QUERY_TYPE 1/" \
-                $path_common
+                   -e "s/#define DIM.*/#define DIM 100/" \
+                   -e "s/#define QUERY_TYPE.*/#define QUERY_TYPE 1/" \
+                   $path_common
             
-            # Copy each kernel variant to dpu_kernel.c in turn
-            for file in "${files[@]}"; do
-                echo "Copying $file to dpu_kernel.c..."
-                cp "$base_dir/$file" "$base_dir/dpu_kernel.c"
 
-            
+            for cache_size in "${cache_size_values[@]}"; do
+                # 1. Update macro definitions
+                sed -i \
+                    -e "s|#define DSIZE.*|#define DSIZE ${cache_size}|" \
+                    $path_dpu_kernel
 
                 # Step 1: update RESULT_DIR in config.json
-                jq ".RESULT_DIR = \"${file}_SPACE1B20M4096_DIR\"" ../config.json > ../tmp.json \
+                jq ".RESULT_DIR = \"CACHE_SIZE_${cache_size}_SPACE1B20M4096_DIR\"" ../config.json > ../tmp.json \
                     && mv ../tmp.json ../config.json
 
                 # Step 2: extract the output directory path and create it
@@ -121,13 +117,15 @@ for m0 in "${macro0_values[@]}"; do
                     echo "Directory already exists: ../$new_dir"
                     mkdir -p "../$new_dir/DPU_DIR"
                 fi
-                    
+            
+                # cd "$PROJECT_ROOT"
+                # rm -rf build && cmake -B build . 
+                # cd build
 
                 make -j
                 make main -j
 
-                nprobe=(4 5 8 11 21 71)
-                # nprobe=(11)
+                nprobe=(4)
                 echo "Running with ${m0}"
                 
                 for np in "${nprobe[@]}"; do
@@ -139,10 +137,9 @@ for m0 in "${macro0_values[@]}"; do
                     
                     echo "The command ./main $np completed successfully."
                     
-
+                    
 
                 done
-        
             done
         fi
     done

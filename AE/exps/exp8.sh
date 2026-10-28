@@ -64,7 +64,7 @@ run_single_command() {
 
 # ======================= #EXP8 DPU + CPU ================================
 
-cp "$PROJECT_ROOT/space1B-20M-4096C.json" "$PROJECT_ROOT/config.json"
+cp "$PROJECT_ROOT/configs/space1B-20M-4096C.json" "$PROJECT_ROOT/config.json"
 
 macro0_values=("#define TEST_DPU" "#define TEST_CPU")
 

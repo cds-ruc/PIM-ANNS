@@ -101,7 +101,7 @@ for m0 in "${macro0_values[@]}"; do
 
        
         if [[ ${m0} == "space1B-20M-4096C.json" ]]; then
-            cp ../${m0} ../config.json
+            cp "$PROJECT_ROOT/configs/${m0}" "$PROJECT_ROOT/config.json"
 
             sed -i -e "s/#define MY_PQ_M.*/#define MY_PQ_M 20/" \
                    -e "s/#define DIM.*/#define DIM 100/" \

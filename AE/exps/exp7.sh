@@ -60,7 +60,7 @@ run_single_command() {
 
 # ======================= #EXP7 DPU ================================
 
-cp "$PROJECT_ROOT/space1B-20M-4096C.json" "$PROJECT_ROOT/config.json"
+cp "$PROJECT_ROOT/configs/space1B-20M-4096C.json" "$PROJECT_ROOT/config.json"
 
 sed -i \
     -e "s|#define TEST_.*|#define TEST_DPU|" \

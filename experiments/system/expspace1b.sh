@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/." && pwd)" || exit 1
+PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)" || exit 1
 cd "$PROJECT_ROOT" || exit 1
 
 
@@ -42,7 +42,7 @@ sed -i \
 macro0_values=("space1B-20M-4096C.json")
 macro1_values=("#define TEST_DPU" )
 
-num_dpu_values=(1280 1600 1920 2240 2558)
+
 
 
 
@@ -62,7 +62,7 @@ run_single_command() {
 
 run_single_command() {
     local cmd="$1"
-    local max_test=10
+    local max_test=1
     local i=0
     local exit_code=0
 
@@ -88,7 +88,7 @@ for m0 in "${macro0_values[@]}"; do
                $path_common
 
         if [[ ${m0} == "space1B-20M-4096C.json" ]]; then
-            cp ../${m0} ../config.json
+            cp "$PROJECT_ROOT/configs/${m0}" "$PROJECT_ROOT/config.json"
 
             sed -i -e "s/#define MY_PQ_M.*/#define MY_PQ_M 20/" \
                    -e "s/#define DIM.*/#define DIM 100/" \
@@ -96,53 +96,25 @@ for m0 in "${macro0_values[@]}"; do
                    $path_common
             
 
-            for num_dpu in "${num_dpu_values[@]}"; do
-                # 1. Update macro definitions
-                sed -i \
-                    -e "s|#define NR_DPU.*|#define NR_DPU ${num_dpu}|" \
-                    $path_common
+        
+            make -j
+            make main -j
 
-                # Step 1: update RESULT_DIR in config.json
-                jq ".RESULT_DIR = \"NR_DPU_${num_dpu}_SPACE1B20M4096_DIR\"" ../config.json > ../tmp.json \
-                    && mv ../tmp.json ../config.json
-
-                # Step 2: extract the output directory path and create it
-                new_dir=$(grep -oP '"RESULT_DIR": "\K[^"]+' ../config.json)
-                if [ ! -d "../$new_dir" ]; then
-                    mkdir -p "../$new_dir"
-                    mkdir -p "../$new_dir/DPU_DIR"
-                    echo "Created directory: ../$new_dir"
-                else
-                    echo "Directory already exists: ../$new_dir"
-                    mkdir -p "../$new_dir/DPU_DIR"
-                fi
+            nprobe=(1)
+            echo "Running with ${m0}"
             
-                make -j
-                make main -j
-
-                nprobe=(4 5 8 10 21 71)
-                echo "Running with ${m0}"
+            for np in "${nprobe[@]}"; do
+            
                 
-                for np in "${nprobe[@]}"; do
-                    # if [[ $np -eq 71 ]]; then
-                    #     sed -i -e "s/#define MAX_COROUTINE.*/#define MAX_COROUTINE 2/" $path_common
-                    #     make -j
-                    #     make main -j
-                    # fi
+                date +"%Y-%m-%d %H:%M:%S"
+                run_single_command "./main $np"
+                
+                echo "The command ./main $np completed successfully."
+                
 
-                    
-                    date +"%Y-%m-%d %H:%M:%S"
-                    run_single_command "./main $np"
-                    
-                    echo "The command ./main $np completed successfully."
-                    
 
-                    # if [[ $np -eq 71 ]]; then
-                    #     sed -i -e "s/#define MAX_COROUTINE.*/#define MAX_COROUTINE 4/" $path_common
-                    # fi
-
-                done
             done
+          
         fi
     done
 done

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/." && pwd)" || exit 1
+PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)" || exit 1
 cd "$PROJECT_ROOT" || exit 1
 
 
 
 
-if [ ! -d "$PROJECT_ROOT/SPACE1B20M4096_DIR/DPU_DIR" ]; then
-    mkdir -p "$PROJECT_ROOT/SPACE1B20M4096_DIR/DPU_DIR"
+if [ ! -d "$PROJECT_ROOT/StaticSPACE1B20M4096_DIR/DPU_DIR" ]; then
+    mkdir -p "$PROJECT_ROOT/StaticSPACE1B20M4096_DIR/DPU_DIR"
 fi
 
 
@@ -39,10 +39,10 @@ sed -i \
 
 
 
-macro0_values=("space1B-20M-4096C.json")
+macro0_values=("static-space1B-20M-4096C.json")
 macro1_values=("#define TEST_DPU" )
 
-slice_values=(250000)
+thread_values=(1)
 
 
 
@@ -87,8 +87,8 @@ for m0 in "${macro0_values[@]}"; do
                -e "s/#define MAX_COROUTINE.*/#define MAX_COROUTINE 4/" \
                $path_common
 
-        if [[ ${m0} == "space1B-20M-4096C.json" ]]; then
-            cp ../${m0} ../config.json
+        if [[ ${m0} == "static-space1B-20M-4096C.json" ]]; then
+            cp "$PROJECT_ROOT/configs/${m0}" "$PROJECT_ROOT/config.json"
 
             sed -i -e "s/#define MY_PQ_M.*/#define MY_PQ_M 20/" \
                    -e "s/#define DIM.*/#define DIM 100/" \
@@ -96,14 +96,14 @@ for m0 in "${macro0_values[@]}"; do
                    $path_common
             
 
-            for slice in "${slice_values[@]}"; do
+            for thread in "${thread_values[@]}"; do
                 # 1. Update macro definitions
                 sed -i \
-                    -e "s|#define SLOT_L.*|#define SLOT_L ${slice}|" \
+                    -e "s|#define DynamicBalance_THREAD.*|#define DynamicBalance_THREAD ${thread}|" \
                     $path_common
 
                 # Step 1: update RESULT_DIR in config.json
-                jq ".RESULT_DIR = \"SLOT_L_${slice}_SPACE1B20M4096_DIR\"" ../config.json > ../tmp.json \
+                jq ".RESULT_DIR = \"DynamicBalance_THREAD_${thread}_DynamicSPACE1B20M4096_DIR\"" ../config.json > ../tmp.json \
                     && mv ../tmp.json ../config.json
 
                 # Step 2: extract the output directory path and create it
@@ -120,7 +120,7 @@ for m0 in "${macro0_values[@]}"; do
                 make -j
                 make main -j
 
-                nprobe=(5)
+                nprobe=(4)
                 echo "Running with ${m0}"
                 
                 for np in "${nprobe[@]}"; do

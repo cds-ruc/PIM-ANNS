@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/." && pwd)" || exit 1
+PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)" || exit 1
 cd "$PROJECT_ROOT" || exit 1
 
 
@@ -88,7 +88,7 @@ for m0 in "${macro0_values[@]}"; do
                $path_common
 
         if [[ ${m0} == "space1B-20M-4096C.json" ]]; then
-            cp ../${m0} ../config.json
+            cp "$PROJECT_ROOT/configs/${m0}" "$PROJECT_ROOT/config.json"
 
             sed -i -e "s/#define MY_PQ_M.*/#define MY_PQ_M 20/" \
                    -e "s/#define DIM.*/#define DIM 100/" \

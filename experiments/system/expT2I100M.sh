@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/." && pwd)" || exit 1
+PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)" || exit 1
 cd "$PROJECT_ROOT" || exit 1
 
 
@@ -60,7 +60,7 @@ for m0 in "${macro0_values[@]}"; do
     
     cd "$PROJECT_ROOT/build" || exit 1
 
-    cp ../${m0} ../config.json
+    cp "$PROJECT_ROOT/configs/${m0}" "$PROJECT_ROOT/config.json"
 
     
 
