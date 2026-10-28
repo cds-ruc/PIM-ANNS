@@ -72,6 +72,7 @@ def extract_data():
     print(f"DPU counts: {sorted(df['dpu_count'].unique())}")
     print(f"nprobe values: {sorted(df['nprobe'].unique())}")
     
+    (ANALYSIS_DIR / "data").mkdir(parents=True, exist_ok=True)
     df.to_csv(str(ANALYSIS_DIR / "data" / "dpu_performance.csv"), index=False)
     return df
 

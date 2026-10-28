@@ -87,6 +87,7 @@ if all_data:
     
     # Save to CSV
     csv_path = str(ANALYSIS_DIR / "data" / "extracted_performance_data.csv")
+    (ANALYSIS_DIR / "data").mkdir(parents=True, exist_ok=True)
     df.to_csv(csv_path, index=False)
     print(f"\nData saved to {csv_path}")
     

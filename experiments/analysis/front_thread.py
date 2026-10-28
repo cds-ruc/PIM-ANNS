@@ -63,6 +63,7 @@ def extract_data():
     print("\nFirst five rows:")
     print(df.head())
     
+    (ANALYSIS_DIR / "data").mkdir(parents=True, exist_ok=True)
     df.to_csv(str(ANALYSIS_DIR / "data" / "thread_performance.csv"), index=False)
     return df
 

@@ -72,6 +72,7 @@ def extract_data():
     print(f"Cache sizes: {sorted(df['cache_size'].unique())}")
     print(f"nprobe values: {sorted(df['nprobe'].unique())}")
     
+    (ANALYSIS_DIR / "data").mkdir(parents=True, exist_ok=True)
     df.to_csv(str(ANALYSIS_DIR / "data" / "cache_performance.csv"), index=False)
     return df
 

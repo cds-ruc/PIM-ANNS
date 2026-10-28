@@ -63,6 +63,7 @@ if all_data:
     
     # Save results
     output_file = str(ANALYSIS_DIR / "data" / "slot_performance_data.csv")
+    (ANALYSIS_DIR / "data").mkdir(parents=True, exist_ok=True)
     df.to_csv(output_file, index=False)
     print(f"Data saved to {output_file}")
     

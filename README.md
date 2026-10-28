@@ -32,7 +32,7 @@ configs/                # dataset and workload presets
 experiments/
    ├── system/          # TOS system experiment scripts
    ├── single-task/     # TOS single-PU microbenchmarks
-   └── analysis/        # system log analysis and CSV data
+   └── analysis/        # system log analysis scripts
 AE/                     # original system experiment scripts
 utils/                  # dataset preparation utilities
 third-party/            # modified UPMEM SDK, FAISS and pybind11
@@ -175,7 +175,7 @@ Configure dataset/index paths in the JSON preset selected by each script before 
 | T2I dataset | `experiments/system/expT2I100M.sh` |
 | PU optimizations and parameter sensitivity | `experiments/single-task/run_tech_m.sh`, `run_tech_topk.sh`, `run_dsize.sh`, `run_check_size.sh`, `run_pre_size.sh` (all in the same directory) |
 
-System analysis scripts are in `experiments/analysis/`, with existing CSV data in `experiments/analysis/data/`. They locate experiment logs under the repository root and write CSVs back to `data/`; generated plots go to `experiments/analysis/results/`. For example:
+System analysis scripts are in `experiments/analysis/`. Experiment data and logs are not bundled. The scripts read locally generated experiment logs under the repository root and create CSVs in `experiments/analysis/data/`; generated plots go to `experiments/analysis/results/`. These output directories and AE text/CSV/log outputs are ignored by Git. For example:
 
 ```bash
 python3 experiments/analysis/cache_size.py
