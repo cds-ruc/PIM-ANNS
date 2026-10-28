@@ -77,11 +77,11 @@ float *fread_u8bin(
     return float_data;
 }
 
-string dataset_path = "/mnt/optane/wpq/dataset/sift/learn.100M.u8bin";
+string dataset_path = "/path/to/datasets/sift/learn.100M.u8bin";
 
-string index_path = "/mnt/optane/wpq/dataset/sift/index/sift1B_M16_PQ8_C4096_R_L2.faissindex";
+string index_path = "/path/to/datasets/sift/index/sift1B_M16_PQ8_C4096_R_L2.faissindex";
 
-string index_path_write = "/mnt/optane/wpq/dataset/sift1m_from1b/sift1M_M16_PQ8_C4096_R_L2.faissindex";
+string index_path_write = "/path/to/datasets/sift1m_from1b/sift1M_M16_PQ8_C4096_R_L2.faissindex";
 
 int main()
 {

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Project root directory
-ROOT_DIR="/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo"
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || exit 1
 COMMON_H="$ROOT_DIR/checksum/common/common.h"
 DPU_SRC_DIR="$ROOT_DIR/checksum/dpu"
 DPU_C_FILE="$DPU_SRC_DIR/dpu.c"
@@ -16,6 +16,16 @@ M_VALUES=(20 40 60 80 100)
 
 # CHECK_SIZE values
 CHECK_SIZE_VALUES=(1 2 4 5 10 20)
+
+# Require every kernel template before modifying source files.
+for value in "${CHECK_SIZE_VALUES[@]}"; do
+    template="$DPU_SRC_DIR/dpu-CHECK-SIZE=$value.txt"
+    if [ ! -f "$template" ]; then
+        echo "Missing kernel template: $template" >&2
+        exit 1
+    fi
+done
+
 
 # Default parameter values
 DEFAULT_DSIZE=8

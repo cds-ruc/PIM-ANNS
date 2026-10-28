@@ -80,13 +80,13 @@ float *fread_u8bin(
     return float_data;
 }
 
-string trainset_path = "/mnt/optane/wpq/dataset/sift/learn.100M.u8bin";
-// string dataset_path = "/mnt/optane/wpq/dataset/sift/base.1B.u8bin";
-string dataset_path = "/mnt/optane/wpq/dataset/sift/learn.100M.u8bin";
+string trainset_path = "/path/to/datasets/sift/learn.100M.u8bin";
+// string dataset_path = "/path/to/datasets/sift/base.1B.u8bin";
+string dataset_path = "/path/to/datasets/sift/learn.100M.u8bin";
 
-string q_path = "/mnt/optane/wpq/dataset/sift/gt/query.public.10K.u8bin";
+string q_path = "/path/to/datasets/sift/gt/query.public.10K.u8bin";
 
-string index_path_prefix ="/mnt/optane/wpq/dataset/sift/";
+string index_path_prefix ="/path/to/datasets/sift/";
 
 
 void train_ivfpq(int d, int n_cluster, int pq_m = 16, int pq_ksub = 8)

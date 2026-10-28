@@ -431,29 +431,6 @@ public:
 
         std::string cpu_result_path;
 
-        /*------just for debug------------*/
-        std::string debug_path_log_out =
-            std::string(PROJECT_SOURCE_DIR) + std::string("/log/out.txt");
-        std::string debug_path_log_in =
-            std::string(PROJECT_SOURCE_DIR) + std::string("/log/in.txt");
-
-        std::ofstream outfile_log_out;
-        std::ofstream outfile_log_in;
-
-        std::mutex mtx_log_out;
-        std::mutex mtx_log_in;
-
-        std::string debug_path_log_out1 =
-            std::string(PROJECT_SOURCE_DIR) + std::string("/log/out1.txt");
-        std::string debug_path_log_in1 =
-            std::string(PROJECT_SOURCE_DIR) + std::string("/log/in1.txt");
-
-        std::ofstream outfile_log_out1;
-        std::ofstream outfile_log_in1;
-
-        std::mutex mtx_log_out1;
-        std::mutex mtx_log_in1;
-
         ~DPUWrapper()
         {
                 // DPU_ASSERT(dpu_free(fifo_set));

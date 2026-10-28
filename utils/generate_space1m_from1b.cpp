@@ -119,11 +119,11 @@ float *fread_i8bin(
     return float_data;
 }
 
-string dataset_path = "/mnt/optane/wpq/dataset/space/index/base.1B.int8bin";
+string dataset_path = "/path/to/datasets/space/index/base.1B.int8bin";
 
-string index_path = "/mnt/optane/wpq/dataset/space/index/space1B_M20_PQ8_C4096_R_L2.faissindex";
+string index_path = "/path/to/datasets/space/index/space1B_M20_PQ8_C4096_R_L2.faissindex";
 
-string index_path_write = "/mnt/optane/wpq/dataset/space/index/space1M_M20_PQ8_C4096_R_L2.faissindex";
+string index_path_write = "/path/to/datasets/space/index/space1M_M20_PQ8_C4096_R_L2.faissindex";
 
 int main()
 {

@@ -1,4 +1,11 @@
-PROJECT_ROOT="/home/wupuqing/workspace/PIM-ANNS"
+#!/usr/bin/env bash
+: "${REMOTE_HOST:?Set REMOTE_HOST for the remote GPU comparison}"
+: "${REMOTE_USER:?Set REMOTE_USER for the remote GPU comparison}"
+: "${REMOTE_SCRIPT:?Set REMOTE_SCRIPT for the remote GPU comparison}"
+: "${REMOTE_OUTPUT_DIR:?Set REMOTE_OUTPUT_DIR for the remote GPU comparison}"
+
+PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)" || exit 1
+cd "$PROJECT_ROOT" || exit 1
 
 
 rm -rf "$PROJECT_ROOT/SPACE1B20M4096_DIR"
@@ -16,7 +23,7 @@ fi
 
 clear
 
-cd "$PROJECT_ROOT/build"
+cd "$PROJECT_ROOT/build" || exit 1
 
 path_common="$PROJECT_ROOT/common/dataset.h"
 
@@ -65,7 +72,7 @@ sed -i \
     -e "s|#define QUERY_TYPE.*|#define QUERY_TYPE 1|" \
     $path_common
 
-cd "$PROJECT_ROOT/build"
+cd "$PROJECT_ROOT/build" || exit 1
 make -j
 make main -j
 
@@ -80,10 +87,10 @@ done
 
 # ======================= #EXP7 GPU ================================
 
-REMOTE_HOST="10.77.110.155"
-REMOTE_USER="wpq"                                                    
-REMOTE_SCRIPT="/home/wpq/workspace/faiss/faiss/gpu/test/run.sh"      
-REMOTE_OUTPUT_DIR="/home/wpq/workspace/faiss/faiss/gpu/test/GPU_DIR" 
+
+
+
+
 LOCAL_OUTPUT_DIR="$PROJECT_ROOT/SPACE1B20M4096_DIR/GPU_DIR"
 
 

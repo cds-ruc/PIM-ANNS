@@ -45,8 +45,8 @@ def read_binary_file(binary_file):
 
 
 
-text_to_binary('/mnt/optane/wpq/dataset/sift/sift1B_L2_gt_k100.txt', '/mnt/optane/wpq/dataset/sift/sift1B_L2_gt_k100.u8bin')
+text_to_binary('/path/to/datasets/sift/sift1B_L2_gt_k100.txt', '/path/to/datasets/sift/sift1B_L2_gt_k100.u8bin')
 
 
 
-read_binary_file('/mnt/optane/wpq/dataset/sift/sift1B_L2_gt_k100.u8bin')
+read_binary_file('/path/to/datasets/sift/sift1B_L2_gt_k100.u8bin')

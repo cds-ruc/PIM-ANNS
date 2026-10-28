@@ -1,48 +1,62 @@
-![UPMEM Logo](https://www.upmem.com/wp-content/uploads/2018/05/Logo-original-wesbite.png)
+# TOS single-PU microbenchmarks
 
-The UPMEM Processing-In-Memory solution consists of a pool of programmable co-processors, the DPUs, integrated in the memory.
+These experiments compare PQ distance kernels and measure sensitivity to PQ subspace count, Top-K, transfer size, LUT segment size, pruning checks and precomputation size. The `checksum/` directory keeps its SDK example name, but its host program computes CPU reference PQ distances and runs a DPU search kernel; it is not a checksum demo.
 
-# Content
-Examples of DPU programs generated with UPMEM DPU SDK
+## Requirements
 
-# Requirements
+Use a configured UPMEM machine with the DPU SDK on `PATH`, a C compiler and GNU Make. Plotting requires Python 3, NumPy, pandas and Matplotlib. The default build uses one DPU and 16 tasklets. There is one C host implementation; no Python host or `test_python` target is provided.
 
- * The [UPMEM DPU SDK](https://sdk.upmem.com/)
- * GNU make and GCC, to build the application
+## Inputs
 
-# Building the programs
+Place headerless binary files in `experiments/single-task/input/`. For each PQ subspace count `M` required by a sweep, supply:
 
-`make` to build the programs.
+| File | Type and shape |
+|---|---|
+| `data_M<M>.bin` | `uint8`, `100000 × M` PQ codes in row-major order |
+| `id_M<M>.bin` | `int64`, `100000` vector IDs |
+| `lut_M<M>.bin` | `int32`, `M × 256` lookup-table entries in row-major order |
 
-`make clean` removes the resulting builds.
+Use the native little-endian representation expected by the host. Input data is not bundled. The M sweeps use `20, 40, 60, 80, 100`; the Top-K sweep uses `M=20`. Input files must agree with `SLOT_L`, `MY_PQ_M` and `MY_PQ_CLUSTER` in `checksum/common/common.h`.
 
-# Executing
+`inspect_data.py` inspects existing expanded inputs and compares the first M=40 vector with the original M=20 vector. It additionally expects `input/data.bin` with shape `100000 × 20` and uses `input/lut.bin` for the original LUT size report. It does not generate inputs or establish that every vector is correct.
 
-The simplest way to execute the programs is to run *make test*.
-Otherwise, you may run individual tests manually by executing the binary generated in the *build* folder of the targeted program.
+```bash
+python3 experiments/single-task/inspect_data.py
+```
 
-# List of demo programs
+## Build and run one configuration
 
-## checksum
+From the repository root:
 
-The host application generates a random file of 8MB, and schedules multiple DPUs co-processors to compute the checksum on this file.
-As sanity check it compares host result with the DPU results, and prints out the DPU performances:
-* Total number of DPU cycles executed
-* The number of DPU cycles per byte processed
+```bash
+make -C experiments/single-task clean
+make -C experiments/single-task test
+```
 
-Macros can be used to change the dimensions of the program:
-* NR_TASKLETS set the number of tasklets used by the dpu program (default: 16)
-* NR_DPUS set the number of dpus used by the host program (default: 1)
+Set the macros in `checksum/common/common.h` and select `checksum/dpu/dpu.c` before running. The checked-in defaults reference the M=100 files through `../input/`, relative to the `checksum/` working directory used by Make. Direct execution of `build/checksum_host` must also use that working directory. The host prints DPU time and compares CPU/DPU Top-K IDs; its current PASS criterion is at least five matching IDs, not exact equality.
 
-example: `make test NR_TASKLETS=1 NR_DPUS=DPU_ALLOCATE_ALL`
+## Parameter sweeps
 
-Two implementations of the Host application are provided:
-* `host.c` using the C Host API
-* `host.py` using the Python Host API
+Run the desired script with Bash from any directory. Paths are resolved relative to the script location.
 
-`make test` will run both implementations. Use the Makefile targets `test_c` or `test_python` to specify an implementation.
+| Run script | Results directory | Plot script |
+|---|---|---|
+| `run_tech_m.sh` | `TECH-M/` | `print_tech_m.sh` |
+| `run_tech_topk.sh` | `TECH-TOPK/` | `print_tech_topk.sh` |
+| `run_dsize.sh` | `SEN-DSIZE/` | `print_dsize.sh` |
+| `run_lut_size.sh` | `SEN-LUT_SIZE/` | `print_lut_size.sh` |
+| `run_pre_size.sh` | `SEN-PRE_COMPUTE/` | `print_pre_size.sh` |
+| `run_check_size.sh` | `SEN-CHECK_SIZE/` | `print_check_size.sh` |
 
-Note: because the input file is randomly generated, the checksum may differ between the two implementations.
+For example, from the repository root:
 
-# SDK Documentation
-https://sdk.upmem.com/stable/
+```bash
+bash experiments/single-task/run_tech_m.sh
+bash experiments/single-task/print_tech_m.sh
+```
+
+Sweeps rewrite macros, input paths and kernel source files, then rebuild for each configuration. Run them sequentially and keep any local source edits separate. Some scripts restore headers and kernels only on normal completion; inspect your working tree after an interrupted run. The `normal.sh` and `run_exit.sh` wrappers select their respective kernel and run the current configuration.
+
+The CHECK_SIZE sweep requires `checksum/dpu/dpu-CHECK-SIZE={1,2,4,5,10,20}.txt`, which are not included. It stops before modifying sources when a template is missing. Do not substitute another kernel and treat the output as the missing experiment. The LUT_SIZE sweep checks its templates in the same way; its six templates are included.
+
+Plot scripts extract the first `DPU time:` value from each log. Check the full logs and host comparison result before interpreting those plots as successful runs. The `.txt` files inside `checksum/dpu/` are C source templates, not experiment logs.

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Project root directory
-ROOT_DIR="/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo"
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || exit 1
 COMMON_H="$ROOT_DIR/checksum/common/common.h"
 DPU_SRC_DIR="$ROOT_DIR/checksum/dpu"
 DPU_C_FILE="$DPU_SRC_DIR/dpu.c"

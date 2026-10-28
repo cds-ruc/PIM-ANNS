@@ -1,4 +1,6 @@
-PROJECT_ROOT="/home/wupuqing/workspace/PIM-ANNS"
+#!/usr/bin/env bash
+PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/." && pwd)" || exit 1
+cd "$PROJECT_ROOT" || exit 1
 
 
 
@@ -52,11 +54,11 @@ run_single_command() {
     return $exit_code
 }
 
-cp /home/wupuqing/workspace/PIM-ANNS/dpu/dpu_kernel_bigM.c /home/wupuqing/workspace/PIM-ANNS/dpu/dpu_kernel.c
+cp "$PROJECT_ROOT/dpu/dpu_kernel_bigM.c" "$PROJECT_ROOT/dpu/dpu_kernel.c"
 
 for m0 in "${macro0_values[@]}"; do
     
-    cd build
+    cd "$PROJECT_ROOT/build" || exit 1
 
     cp ../${m0} ../config.json
 

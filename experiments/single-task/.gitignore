@@ -1,7 +1,4 @@
-/input
-/SEN-DSIZE
-/SEN-LUT_SIZE
-/SEN-CHECK_SIZE
-/SEN-PRE_COMPUTE
-/TECH-TOPK
-/TECH-M
+input/
+SEN-*/
+TECH-*/
+*.backup

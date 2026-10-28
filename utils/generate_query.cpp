@@ -9,8 +9,8 @@
 #include <sstream>
 
 using namespace std;
-string query_path = "/mnt/optane/wpq/dataset/space/query10K.i8bin";
-string index_path = "/mnt/optane/wpq/dataset/space/index/space1B_M20_PQ8_C4096_R_L2.faissindex";
+string query_path = "/path/to/datasets/space/query10K.i8bin";
+string index_path = "/path/to/datasets/space/index/space1B_M20_PQ8_C4096_R_L2.faissindex";
 
 int max_query = 10000;
 int dim = 100;
@@ -26,16 +26,16 @@ double theta = 0.99;
 
 string nprobe_path = std::string(PROJECT_SOURCE_DIR) + "/space-nprobe=11.txt";
 
-string gt_path = "/mnt/optane/wpq/dataset/space/space1B_L2_gt_k100.bin";
+string gt_path = "/path/to/datasets/space/space1B_L2_gt_k100.bin";
 int main()
 {
-    // string generate_query_path = "/mnt/optane/wpq/dataset/space/query10K-theta-0.8.i8bin";
-    string generate_query_path = "/mnt/optane/wpq/dataset/space/dynamic-query"+to_string(max_query)+"-theta-"+to_string(theta)+".i8bin";
-    // string history_query_path = "/mnt/optane/wpq/dataset/space/query10K-history-theta-0.8.i8bin";
-    string history_query_path = "/mnt/optane/wpq/dataset/space/history-query"+to_string(max_query)+"-theta-"+to_string(theta)+".i8bin";
+    // string generate_query_path = "/path/to/datasets/space/query10K-theta-0.8.i8bin";
+    string generate_query_path = "/path/to/datasets/space/dynamic-query"+to_string(max_query)+"-theta-"+to_string(theta)+".i8bin";
+    // string history_query_path = "/path/to/datasets/space/query10K-history-theta-0.8.i8bin";
+    string history_query_path = "/path/to/datasets/space/history-query"+to_string(max_query)+"-theta-"+to_string(theta)+".i8bin";
 
-    // string generate_gt_path = "/mnt/optane/wpq/dataset/space/space1B-theta-0.8_L2_gt_k100.bin";
-    string generate_gt_path = "/mnt/optane/wpq/dataset/space/space1B-query"+to_string(max_query)+"-theta-"+to_string(theta)+"_L2_gt_k100.bin";
+    // string generate_gt_path = "/path/to/datasets/space/space1B-theta-0.8_L2_gt_k100.bin";
+    string generate_gt_path = "/path/to/datasets/space/space1B-query"+to_string(max_query)+"-theta-"+to_string(theta)+"_L2_gt_k100.bin";
 
     int nq_1;
     int dim_1;

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Project root directory
-ROOT_DIR="/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo"
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || exit 1
 OUTPUT_DIR="$ROOT_DIR/TECH-TOPK"
 RESULTS_CSV="$OUTPUT_DIR/tech_topk_comparison_results.csv"
 PLOT_SCRIPT="$OUTPUT_DIR/generate_tech_topk_comparison_plot.py"

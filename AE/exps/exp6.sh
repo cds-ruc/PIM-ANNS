@@ -1,4 +1,6 @@
-PROJECT_ROOT="/home/wupuqing/workspace/PIM-ANNS"
+#!/usr/bin/env bash
+PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)" || exit 1
+cd "$PROJECT_ROOT" || exit 1
 
 
 rm -rf "$PROJECT_ROOT/SPACE1B20M4096_DIR"
@@ -23,7 +25,7 @@ fi
 
 clear
 
-cd "$PROJECT_ROOT/build"
+cd "$PROJECT_ROOT/build" || exit 1
 
 path_common="$PROJECT_ROOT/common/dataset.h"
 
@@ -79,7 +81,7 @@ for macro_value in "${macro_values[@]}"; do
         -e "s|#define QUERY_TYPE.*|#define QUERY_TYPE 1|" \
         $path_common
 
-    cd "$PROJECT_ROOT/build"
+    cd "$PROJECT_ROOT/build" || exit 1
     make -j
     make main -j
 
@@ -111,7 +113,7 @@ for macro_value in "${macro_values[@]}"; do
         -e "s|#define CHANGE_ENABLE_REPLICA.*|#define CHANGE_ENABLE_REPLICA 1|" \
         $path_common
 
-    cd "$PROJECT_ROOT/build"
+    cd "$PROJECT_ROOT/build" || exit 1
     make -j
     make main -j
 
@@ -147,7 +149,7 @@ sed -i \
     -e "s|#define QUERY_TYPE.*|#define QUERY_TYPE 1|" \
     $path_common
 
-cd "$PROJECT_ROOT/build"
+cd "$PROJECT_ROOT/build" || exit 1
 make -j
 make main -j
 

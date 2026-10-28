@@ -1,4 +1,11 @@
-PROJECT_ROOT="/home/wupuqing/workspace/PIM-ANNS"
+#!/usr/bin/env bash
+: "${REMOTE_HOST:?Set REMOTE_HOST for the remote GPU comparison}"
+: "${REMOTE_USER:?Set REMOTE_USER for the remote GPU comparison}"
+: "${REMOTE_SCRIPT:?Set REMOTE_SCRIPT for the remote GPU comparison}"
+: "${REMOTE_OUTPUT_DIR:?Set REMOTE_OUTPUT_DIR for the remote GPU comparison}"
+
+PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)" || exit 1
+cd "$PROJECT_ROOT" || exit 1
 
 
 rm -rf "$PROJECT_ROOT/SPACE1B20M4096_DIR"
@@ -20,7 +27,7 @@ fi
 
 clear
 
-cd "$PROJECT_ROOT/build"
+cd "$PROJECT_ROOT/build" || exit 1
 
 path_common="$PROJECT_ROOT/common/dataset.h"
 
@@ -73,7 +80,7 @@ for m0 in "${macro0_values[@]}"; do
         -e "s|#define QUERY_TYPE.*|#define QUERY_TYPE 1|" \
         "$PROJECT_ROOT/common/dataset.h"
 
-    cd "$PROJECT_ROOT/build"
+    cd "$PROJECT_ROOT/build" || exit 1
     make -j
     make main -j
 
@@ -92,10 +99,10 @@ done
 
 # ======================= #EXP8 GPU ================================
 
-REMOTE_HOST="10.77.110.155"
-REMOTE_USER="wpq"  # replace with your remote username
-REMOTE_SCRIPT="/home/wpq/workspace/faiss/faiss/gpu/test/runexp8.sh"  # replace with your remote script path
-REMOTE_OUTPUT_DIR="/home/wpq/workspace/faiss/faiss/gpu/test/GPU_DIR"  # replace with your remote output directory path
+
+
+
+
 LOCAL_OUTPUT_DIR="$PROJECT_ROOT/SPACE1B20M4096_DIR/GPU_DIR"
 
 

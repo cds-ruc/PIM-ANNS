@@ -47,27 +47,31 @@ main.cpp             # main program entry point
 - **UPMEM-SDK:** This project uses a modified UPMEM-SDK based on the 2024.2 release. Original SDK: http://sdk-releases.upmem.com/2024.2.0/ubuntu_22.04/upmem-2024.2.0-Linux-x86_64.tar.gz
 
 ```bash
-cd third-party/upmem-2024.2.0-Linux-x86_64/src/backends
-bash ./install.sh
+bash third-party/upmem-2024.2.0-Linux-x86_64/src/backends/install.sh
+source third-party/upmem-2024.2.0-Linux-x86_64/upmem_env.sh
 ```
 
-Note: modify the installation path in `install.sh` to your preferred location.
+The installer rebuilds the backend into the bundled SDK directory used by the root CMake configuration.
 
 - **FAISS:** A modified FAISS for UPMEM compatibility, based on https://github.com/facebookresearch/faiss
 
 ```bash
-cd third-party/faiss_upmem
-cmake -B build .
-make -C build -j faiss
-make -C build install
+(
+  cd third-party/faiss_upmem
+  cmake -B build .
+  make -C build -j faiss
+  make -C build install
+)
 ```
 
-- **Boost Coroutine:**
+- **Host libraries and script dependencies:**
 
 ```bash
 sudo apt-get update
-sudo apt install libboost-all-dev
+sudo apt install libboost-all-dev libgoogle-perftools-dev libblas-dev liblapack-dev jq
 ```
+
+The experiment scripts use Bash, GNU coreutils and `jq`. Python analysis scripts require NumPy, pandas and Matplotlib. Run the following build commands from the repository root after loading the modified SDK environment.
 
 ## 🔨 Build
 
@@ -90,14 +94,11 @@ Following the approach from https://big-ann-benchmarks.com/neurips21.html, we tr
 - First 1 billion dataset vectors
 - 10,000 query vectors
 
-Training scripts:
-
-- `./train_sift1B`: on a 40-logical-core CPU, training takes ~27 hours with default parameters
-- SPACEV-1B follows a similar training procedure
+Dataset preparation sources are in `utils/`, including `train_sift1B.cpp`. Configure their input/output paths and compile them separately against FAISS; the root build does not produce a `train_sift1B` executable. SPACEV-1B follows a similar training procedure.
 
 ### Dataset configuration
 
-Modify `config.json` to point to your local dataset and index paths. Example presets are provided in the repository root (e.g., `space1M-20M-4096C.json`, `space1B-20M-4096C.json`, `sift1B-32M-4096C.json`).
+Modify `config.json` to point to your local dataset and index paths when running `build/main` directly. Experiment scripts overwrite it from their selected preset, so configure that preset instead. Example presets are provided in the repository root (e.g., `space1M-20M-4096C.json`, `space1B-20M-4096C.json`, `sift1B-32M-4096C.json`).
 
 ```json
 {
@@ -105,9 +106,12 @@ Modify `config.json` to point to your local dataset and index paths. Example pre
   "RESULT_DIR": "SPACE1B20M4096_DIR",
   "INDEX_PATH": "/path/to/your/index.faissindex",
   "QUERY_PATH": "/path/to/your/query.i8bin",
+  "HISTORY_QUERY_PATH": "/path/to/your/history-query.i8bin",
   "GROUNDTRUTH_PATH": "/path/to/your/groundtruth.bin"
 }
 ```
+
+Use queries, indexes and groundtruth from the same dataset; T2I requires its own groundtruth, not SPACEV groundtruth. JSON paths are literal strings: shell variables and `~` are not expanded.
 
 Additionally, modify macros in `common/dataset.h`:
 
@@ -139,7 +143,7 @@ Modify `common/dataset.h` and `host/util.cpp` for custom formats.
 After configuring datasets (see above), run the hello-world example to verify the setup:
 
 ```bash
-AE/hello_world.sh
+bash AE/hello_world.sh
 ```
 
 On success, you should see output similar to:
@@ -149,11 +153,11 @@ searching SPACE1M, nprobe = 11
 The command ./main 11 completed successfully.
 ```
 
-Note: update `PROJECT_ROOT` in `AE/hello_world.sh` and dataset paths in `config.json` before running.
+The script locates the repository automatically and copies `space1M-20M-4096C.json` to `config.json`. Configure that preset before running. It rebuilds the program and replaces the previous `SPACE1M20M4096_DIR` results.
 
 ## 🔬 TOS Experiments
 
-Configure dataset/index paths in the JSON presets and `PROJECT_ROOT` in each experiment script before running. These scripts change build-time parameters and generate experimental results; run the selected experiment on a configured UPMEM machine.
+Configure dataset/index paths in the JSON preset selected by each script before running; `/path/to/datasets/...` entries are placeholders. Scripts locate the repository from their own location, so no `PROJECT_ROOT` edit is needed. Run them with Bash, for example `bash expDynamic.sh`. They modify `config.json`, build-time headers and, for kernel comparisons, kernel sources. Run one experiment at a time on a configured UPMEM machine; some AE scripts replace previous result directories.
 
 | Experiment | Entry points |
 |---|---|
@@ -165,7 +169,11 @@ Configure dataset/index paths in the JSON presets and `PROJECT_ROOT` in each exp
 | T2I dataset | `expT2I100M.sh` |
 | PU optimizations and parameter sensitivity | `experiments/single-task/run_tech_m.sh`, `run_tech_topk.sh`, `run_dsize.sh`, `run_check_size.sh`, `run_pre_size.sh` (all in the same directory) |
 
-The microbenchmark scripts also contain machine-specific working paths and compile-time settings; configure them before execution. Their `checksum/dpu/*.txt` files are kernel source templates and must be retained.
+See the [single-PU microbenchmark guide](experiments/single-task/README.md) for binary input formats, commands and the missing CHECK_SIZE templates. The `checksum/dpu/*.txt` files are kernel source templates.
+
+`AE/exps/exp7.sh` and `exp8.sh` additionally require `REMOTE_HOST`, `REMOTE_USER`, `REMOTE_SCRIPT` and `REMOTE_OUTPUT_DIR` environment variables for their remote GPU comparison. They stop before running experiments if these variables are unset; the GPU scripts are supplied separately on that machine.
+
+The source utilities in `utils/` have editable `/path/to/datasets/...` constants for local dataset preparation. They are not targets of the root CMake build. System search does not automatically export query-specific debug data.
 
 Use the [`main` branch](https://github.com/cds-ruc/PIM-ANNS/tree/main) for the original ATC experiment protocol and [artifact evaluation guide](https://github.com/cds-ruc/PIM-ANNS/blob/main/AE/README.md).
 

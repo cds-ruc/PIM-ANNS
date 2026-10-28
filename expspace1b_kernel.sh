@@ -1,4 +1,6 @@
-PROJECT_ROOT="/home/wupuqing/workspace/PIM-ANNS"
+#!/usr/bin/env bash
+PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/." && pwd)" || exit 1
+cd "$PROJECT_ROOT" || exit 1
 
 
 
@@ -9,7 +11,7 @@ PROJECT_ROOT="/home/wupuqing/workspace/PIM-ANNS"
 
 # clear
 
-cd "$PROJECT_ROOT/build"
+cd "$PROJECT_ROOT/build" || exit 1
 
 path_common="$PROJECT_ROOT/common/dataset.h"
 
@@ -76,7 +78,7 @@ files=(
 )
 
 # Shared paths
-base_dir="/home/wupuqing/workspace/PIM-ANNS/dpu"
+base_dir="$PROJECT_ROOT/dpu"
 
 
     

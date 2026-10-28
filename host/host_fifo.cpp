@@ -683,10 +683,6 @@ void DPUWrapper::dpu_init() {
   // do nothing
 #endif
 
-  outfile_log_out.open(debug_path_log_out, std::ios::trunc);
-  outfile_log_in.open(debug_path_log_in, std::ios::trunc);
-  outfile_log_out1.open(debug_path_log_out1, std::ios::trunc);
-  outfile_log_in1.open(debug_path_log_in1, std::ios::trunc);
 
   /*----- index and QUERY INFO----------------------------------*/
 
@@ -1033,67 +1029,6 @@ void DPUWrapper::level2_search(coroutine<void>::push_type &sink, int q_id,
     query->min_lut_sum_map[c_id] = offset;
 
     dis0_dynamic[c_id] = (DIST_TYPE)(dis0_[c_id]);
-  }
-
-  if (q_id == 3 && false) {
-    printf("query id = %d\n", q_id);
-    for (int i = 0; i < query->nprobe; i++) {
-      int c_id = query->idx[i];
-      printf("c_id = %d, dis0 = %d\n", c_id, dis0_dynamic[c_id]);
-      for (int j = 0; j < MY_PQ_M; j++) {
-        printf("LUT of subvector %d: ", j);
-        for (int k = 0; k < MY_PQ_CLUSTER; k++) {
-          printf(
-              "%d ",
-              (int)sim_table_dynamic[c_id * LUT_SIZE + j * MY_PQ_CLUSTER + k]);
-        }
-        printf("\n");
-      }
-    }
-  }
-
-  if (q_id == 3) {
-
-    string lut_path =
-        "/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/lut.bin";
-    // Write the LUT for query->idx[0]
-    std::ofstream lut_file(lut_path, std::ios::binary);
-    if (lut_file.is_open()) {
-      int c_id = query->idx[0];
-      lut_file.write(
-          reinterpret_cast<const char *>(&sim_table_dynamic[c_id * LUT_SIZE]),
-          sizeof(DIST_TYPE) * LUT_SIZE);
-      lut_file.close();
-      std::cout << "LUT written to " << lut_path << std::endl;
-    } else {
-      std::cerr << "Unable to open file " << lut_path << std::endl;
-    }
-
-    string data_path =
-        "/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/data.bin";
-    string id_path =
-        "/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/id.bin";
-
-    std::ofstream data_file(data_path, std::ios::binary);
-    std::ofstream id_file(id_path, std::ios::binary);
-    if (data_file.is_open() && id_file.is_open()) {
-      int c_id = query->idx[0];
-      int s_id = 0; // Use shard 0
-      DATA_TYPE *data = getdata(c_id, s_id);
-      ID_TYPE *ids = getids(c_id, s_id);
-      int align8 = (SLOT_L / 10 + 7) & ~7;
-      data_file.write(reinterpret_cast<const char *>(data),
-                      sizeof(DATA_TYPE) * align8 * MY_PQ_M);
-      id_file.write(reinterpret_cast<const char *>(ids),
-                    sizeof(ID_TYPE) * align8);
-      data_file.close();
-      id_file.close();
-      std::cout << "Data and IDs written to " << data_path << " and " << id_path
-                << std::endl;
-    } else {
-      std::cerr << "Unable to open file " << data_path << " or " << id_path
-                << std::endl;
-    }
   }
 
   // timer.end();
@@ -2543,25 +2478,6 @@ void DPUWrapper::thread_dynamic_balance(const std::vector<int> &cluster_id_v,
         freq[idx]++;
       }
     }
-
-    // when q_id == 5000, we will trigger dynamic balance
-    // {
-    //     if (now_qid != 5000)
-    //     {
-    //         continue;
-    //     }
-
-    //     std::string change_freq_path =
-    //     "/mnt/optane/wpq/dataset/space/change_freq.txt";
-
-    //     std::ifstream infile;
-    //     infile.open(change_freq_path);
-    //     for (int i = 0; i < mconfig.getMaxCluster(); i++)
-    //     {
-    //         infile >> freq[i];
-    //     }
-    //     infile.close();
-    // }
 
     int shard_size[mconfig.getMaxCluster()];
     for (int i = 0; i < mconfig.getMaxCluster(); i++) {

@@ -26,7 +26,7 @@
 #     print(f"{num_rows} line saved to: {output_file}")
 
 
-# extract_rows('/mnt/optane/wpq/dataset/space/query.i8bin', '/mnt/optane/wpq/dataset/space/query10K.i8bin', 10000)
+# extract_rows('/path/to/datasets/space/query.i8bin', '/path/to/datasets/space/query10K.i8bin', 10000)
 
 
 # def verify_binary_file(binary_file, num_rows_to_print=2):
@@ -41,7 +41,7 @@
 #             print(f"line {i}: {row_values}")
 
 
-# verify_binary_file('/mnt/optane/wpq/dataset/space/query10K.i8bin')
+# verify_binary_file('/path/to/datasets/space/query10K.i8bin')
 
 
 
@@ -96,8 +96,8 @@ def read_binary_file(binary_file):
 
 
 
-text_to_binary('/mnt/optane/wpq/dataset/space/space1b_L2_gt_k100.txt', '/mnt/optane/wpq/dataset/space/space1B_L2_gt_k100.i8bin')
+text_to_binary('/path/to/datasets/space/space1b_L2_gt_k100.txt', '/path/to/datasets/space/space1B_L2_gt_k100.i8bin')
 
 
 
-read_binary_file('/mnt/optane/wpq/dataset/space/space1B_L2_gt_k100.i8bin')
+read_binary_file('/path/to/datasets/space/space1B_L2_gt_k100.i8bin')

@@ -16,9 +16,9 @@
 // M parameter
 #define MY_PQ_M 100
 
-#define DATA_FILE "/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/data_M100.bin"
-#define ID_FILE "/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/id_M100.bin"
-#define LUT_FILE "/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/lut_M100.bin"
+#define DATA_FILE "../input/data_M100.bin"
+#define ID_FILE "../input/id_M100.bin"
+#define LUT_FILE "../input/lut_M100.bin"
 
 
 

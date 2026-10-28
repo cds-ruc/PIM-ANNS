@@ -1,8 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
+PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)" || exit 1
 
 clear
 
-cd /home/wupuqing/workspace/PIM-ANNS/build
+cd "$PROJECT_ROOT/build" || exit 1
 
 
 function run_space() {
@@ -43,7 +44,7 @@ function run_sift(){
 }
 
 
-path_common="/home/wupuqing/workspace/PIM-ANNS/common/dataset.h"
+path_common="$PROJECT_ROOT/common/dataset.h"
 
 
 
