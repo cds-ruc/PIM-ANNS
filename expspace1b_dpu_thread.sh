@@ -98,17 +98,17 @@ for m0 in "${macro0_values[@]}"; do
             
 
             for dpu_thread in "${dpu_thread_values[@]}"; do
-                # 1. 修改宏定义
+                # 1. Update macro definitions
               
                 sed -i \
                     -e "s|set(DPU_FLAGS -DNR_TASKLETS=.*|set(DPU_FLAGS -DNR_TASKLETS=${dpu_thread})|" \
                     $path_cmake
 
-                # Step 1: 修改 config.json 中的 RESULT_DIR
+                # Step 1: update RESULT_DIR in config.json
                 jq ".RESULT_DIR = \"DPU_THREAD_${dpu_thread}_SPACE1B20M4096_DIR\"" ../config.json > ../tmp.json \
                     && mv ../tmp.json ../config.json
 
-                # Step 2: 提取新目录路径并创建目录
+                # Step 2: extract the output directory path and create it
                 new_dir=$(grep -oP '"RESULT_DIR": "\K[^"]+' ../config.json)
                 if [ ! -d "../$new_dir" ]; then
                     mkdir -p "../$new_dir"

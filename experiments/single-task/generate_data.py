@@ -11,7 +11,7 @@
 #     MY_PQ_CLUSTER = 256
 #     target_Ms = [20, 40, 60, 80, 100]
     
-#     # 读取原始数据
+#     # Read the original data
 #     original_data = np.fromfile(original_data_path, dtype=np.uint8).reshape(SLOT_L, ORIGINAL_M)
 #     original_ids = np.fromfile(original_id_path, dtype=np.int64)
 #     original_lut = np.fromfile(original_lut_path, dtype=np.int32).reshape(ORIGINAL_M, MY_PQ_CLUSTER)
@@ -29,16 +29,16 @@
 #         replication_factor = target_M // ORIGINAL_M
 #         print(f"\nGenerating dataset with M={target_M} (replication factor: {replication_factor})...")
         
-#         # 1. 生成新的数据文件（沿列方向复制）
+#         # 1. Generate data by repeating columns
 #         new_data = np.tile(original_data, (1, replication_factor))
 #         new_data_path = f"/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/data_M{target_M}.bin"
 #         new_data.tofile(new_data_path)
         
-#         # 2. ID文件保持不变
+#         # 2. Keep the ID file unchanged
 #         new_id_path = f"/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/id_M{target_M}.bin"
 #         original_ids.tofile(new_id_path)
         
-#         # 3. 生成新的LUT文件（沿行方向复制）
+#         # 3. Generate the LUT by repeating rows
 #         new_lut = np.tile(original_lut, (replication_factor, 1))
 #         new_lut_path = f"/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/lut_M{target_M}.bin"
 #         new_lut.tofile(new_lut_path)
@@ -54,7 +54,7 @@
 #     data_path = f"/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/data_M{target_M}.bin"
 #     lut_path = f"/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/lut_M{target_M}.bin"
     
-#     # 检查文件大小
+#     # Check file sizes
 #     data_size = os.path.getsize(data_path)
 #     expected_data_size = SLOT_L * target_M
 #     lut_size = os.path.getsize(lut_path)
@@ -67,10 +67,10 @@
 # if __name__ == "__main__":
 #     print("=== PQ Dataset Expansion Tool ===")
     
-#     # 生成数据集
+#     # Generate datasets
 #     generate_expanded_datasets()
     
-#     # 验证
+#     # Verify generated files
 #     print("\n=== Verification ===")
 #     for target_M in [40, 60, 80, 100]:
 #         verify_dataset(target_M)
@@ -87,7 +87,7 @@ def inspect_generated_files():
         print(f"INSPECTING M={target_M} DATASET")
         print(f"{'='*60}")
         
-        # 检查数据文件
+        # Inspect the data file
         data_path = f"/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/data_M{target_M}.bin"
         if os.path.exists(data_path):
             data = np.fromfile(data_path, dtype=np.uint8)
@@ -95,7 +95,7 @@ def inspect_generated_files():
             print(f"Total elements: {len(data)}")
             print(f"Shape: {len(data)//target_M} vectors × {target_M} dimensions")
             
-            for i in range(2):  # 前2个向量
+            for i in range(2):  # First two vectors
                 start_idx = i * target_M
                 end_idx = start_idx + target_M
                 vector_data = data[start_idx:end_idx]
@@ -105,7 +105,7 @@ def inspect_generated_files():
         else:
             print(f"Data file not found: {data_path}")
         
-        # 检查ID文件
+        # Inspect the ID file
         id_path = f"/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/id_M{target_M}.bin"
         if os.path.exists(id_path):
             ids = np.fromfile(id_path, dtype=np.int64)
@@ -115,7 +115,7 @@ def inspect_generated_files():
         else:
             print(f"ID file not found: {id_path}")
         
-        # 检查LUT文件
+        # Inspect the LUT file
         lut_path = f"/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/lut_M{target_M}.bin"
         if os.path.exists(lut_path):
             lut = np.fromfile(lut_path, dtype=np.int32)
@@ -123,7 +123,7 @@ def inspect_generated_files():
             print(f"Total elements: {len(lut)}")
             print(f"Shape: {target_M} groups × 256 clusters")
             
-            # 显示前2个组
+            # Display the first two groups
             for i in range(2):
                 start_idx = i * 256
                 end_idx = start_idx + 256
@@ -136,19 +136,19 @@ def inspect_generated_files():
             print(f"LUT file not found: {lut_path}")
 
 def compare_replication_pattern():
-    """比较复制模式是否正确"""
+    """Verify the replication pattern."""
     print(f"\n{'='*60}")
     print("COMPARING REPLICATION PATTERNS")
     print(f"{'='*60}")
     
-    # 读取原始M=20的数据
+    # Read the original M=20 data
     original_data_path = "/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/data.bin"
     original_data = np.fromfile(original_data_path, dtype=np.uint8).reshape(100000, 20)
     
     print("Original M=20 data (first vector):")
     print(original_data[0])
     
-    # 检查M=40的数据
+    # Inspect the M=40 data
     data_40_path = "/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/data_M40.bin"
     if os.path.exists(data_40_path):
         data_40 = np.fromfile(data_40_path, dtype=np.uint8).reshape(100000, 40)
@@ -163,13 +163,13 @@ def compare_replication_pattern():
 if __name__ == "__main__":
     print("=== INSPECTING GENERATED DATASETS ===")
     
-    # 检查所有生成的文件
+    # Inspect all generated files
     inspect_generated_files()
     
-    # 比较复制模式
+    # Compare replication patterns
     compare_replication_pattern()
     
-    # 检查文件大小
+    # Check file sizes
     print(f"\n{'='*60}")
     print("FILE SIZES")
     print(f"{'='*60}")

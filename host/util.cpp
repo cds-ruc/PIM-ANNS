@@ -92,7 +92,7 @@ float *read_query(const char *filename, int type, int &nvecs, int &dim) {
     infile.close();
 
     return float_data;
-  } else if (type == 4) // 新增 type 4：二进制浮点格式
+  } else if (type == 4) // Type 4: binary floating-point format
   {
     FILE *f = fopen(filename, "rb");
     if (!f) {
@@ -100,17 +100,17 @@ float *read_query(const char *filename, int type, int &nvecs, int &dim) {
       return NULL;
     }
 
-    // 读取向量数量和维度
+    // Read the vector count and dimensionality
     assert(fread(&nvecs, sizeof(int), 1, f) == 1);
     assert(fread(&dim, sizeof(int), 1, f) == 1);
 
-    // 计算总元素数
+    // Compute the total element count
     int total_elements = nvecs * dim;
 
-    // 直接分配浮点数组
+    // Allocate the floating-point buffer
     float *float_data = new float[total_elements]();
 
-    // 一次性读取所有浮点数据
+    // Read all floating-point data
     assert(fread(float_data, sizeof(float), total_elements, f) ==
            total_elements);
 

@@ -347,8 +347,8 @@ void task_perf() {
 
   if (t_id == 0) {
     heap_heapify1(query.k, result.result_v, result.result_id, NULL, NULL, 0);
-    PRE_COMPUTE = query.shard_l * 0.2;    // 预计算20%
-    PRE_COMPUTE = (PRE_COMPUTE + 7) & ~7; // 向上取整到8的倍数
+    PRE_COMPUTE = query.shard_l * 0.2;    // Precompute 20% of the vectors
+    PRE_COMPUTE = (PRE_COMPUTE + 7) & ~7; // Round up to a multiple of 8
   }
   barrier_wait(&barrier);
 
@@ -414,10 +414,10 @@ void task_perf() {
 
   barrier_wait(&barrier);
 
-  /* ========== 结果合并与输出 ========== */
+  /* ========== Merge and output results ========== */
   barrier_wait(&barrier);
   if (t_id == 0) {
-    // 合并所有线程的局部堆
+    // Merge the local heaps from all tasklets
     for (int i = 0; i < NR_TASKLETS; i++) {
       for (int j = 0; j < K_TASKLET; j++) {
         if (local_dis_all[i * K_TASKLET + j] < result.result_v[0]) {
@@ -446,11 +446,11 @@ void task_perf() {
 
   totallen = query.shard_l - PRE_COMPUTE;
   chunk_size = totallen / NR_TASKLETS;
-  chunk_size = (chunk_size + 7) & ~7; // 对齐到8的倍数
+  chunk_size = (chunk_size + 7) & ~7; // Align to a multiple of 8
 
   start = t_id * chunk_size + PRE_COMPUTE;
   if (t_id == NR_TASKLETS - 1) {
-    chunk_size = query.shard_l - start; // 最后一个线程处理剩余数据
+    chunk_size = query.shard_l - start; // The last tasklet processes the remaining vectors
   }
 
 

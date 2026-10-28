@@ -18,7 +18,7 @@
 #include <string.h>
 #include <time.h>
 
-// 全局测试数据
+// Global test data
 // uint8_t data[SLOT_L * MY_PQ_M];
 // int64_t data_id[SLOT_L];
 // int32_t LUT[MY_PQ_M * MY_PQ_CLUSTER];
@@ -35,7 +35,7 @@ int64_t result_id[MAX_K];
 #include <stdio.h>
 #include <stdlib.h>
 
-// 假设这些宏已经被正确定义
+// Compile-time configuration
 // #define MY_PQ_M 10
 // #define MY_PQ_CLUSTER 100
 // int32_t lut_array[MY_PQ_M * MY_PQ_CLUSTER];
@@ -89,14 +89,14 @@ void analyze_lut(int32_t *lut_array)
     int32_t min_val = INT32_MAX;
     long long sum = 0;
 
-    // 用于中位数计算的临时数组
+    // Temporary array for median computation
     int32_t *sorted_array = (int32_t *)malloc(total_elements * sizeof(int32_t));
     if (!sorted_array) {
         perror("Failed to allocate memory for sorting");
         return;
     }
 
-    // 第一次遍历：计算 max, min, sum，并拷贝数组用于排序
+    // Compute max, min, and sum, and copy values for sorting
     for (size_t i = 0; i < total_elements; ++i) {
         int32_t val = lut_array[i];
         if (val > max_val)
@@ -109,10 +109,10 @@ void analyze_lut(int32_t *lut_array)
 
     double average = (double)sum / total_elements;
 
-    // ✅ 使用正确的比较函数，而不是 lambda
+    // Sort with the integer comparison function
     qsort(sorted_array, total_elements, sizeof(int32_t), compare_int32);
 
-    // 计算中位数
+    // Compute the median
     double median;
     if (total_elements % 2 == 0) {
         median = (sorted_array[total_elements / 2 - 1] + sorted_array[total_elements / 2]) / 2.0;
@@ -124,21 +124,21 @@ void analyze_lut(int32_t *lut_array)
 
     free(sorted_array);
 
-    // 接下来可以继续按组分析，如之前所说
+    // Analyze statistics by group
     analyze_by_groups(lut_array);
 }
 
 #include <assert.h>
 
-// 函数：从二进制文件中读取一个 LUT
-// 参数：
-//   lut_path: LUT 文件路径，比如 "/home/.../lut.bin"
-//   lut_array: 输出参数，用于接收读取到的 LUT 数据（必须提前分配内存！）
-// 返回值：
-//   0 表示成功，-1 表示失败（如文件打开失败或读取失败）
+// Read one LUT from a binary file
+// Parameters:
+//   lut_path: LUT file path, for example "/home/.../lut.bin"
+//   lut_array: preallocated output buffer for the LUT
+// Return value:
+//   0 on success, -1 if opening or reading the file fails
 int read_lut_from_file(const char *lut_path, int32_t *lut_array)
 {
-    FILE *file = fopen(lut_path, "rb"); // 以二进制只读模式打开
+    FILE *file = fopen(lut_path, "rb"); // Open the file for binary reading
     if (file == NULL) {
         perror("Error: Unable to open LUT file");
         return -1;
@@ -155,7 +155,7 @@ int read_lut_from_file(const char *lut_path, int32_t *lut_array)
     }
 
     printf("Successfully read LUT from %s\n", lut_path);
-    return 0; // 成功
+    return 0; // Success
 }
 int read_data_from_file(const char *data_path, uint8_t *data_array)
 {
@@ -165,7 +165,7 @@ int read_data_from_file(const char *data_path, uint8_t *data_array)
         return -1;
     }
 
-    assert(SLOT_L == 100000); // 仅支持100000测试
+    assert(SLOT_L == 100000); // This test supports SLOT_L = 100000 only
 
     size_t expected_elements = SLOT_L * MY_PQ_M;
     size_t read_count = fread(data_array, sizeof(uint8_t), expected_elements, file);
@@ -203,7 +203,7 @@ int read_ids_from_file(const char *id_path, int64_t *ids_array)
     return 0;
 }
 
-// 生成测试文件
+// Generate test files
 void create_test_file()
 {
 
@@ -213,23 +213,23 @@ void create_test_file()
 
     printf("Generating test data...\n");
 
-    srand(0); // 固定种子确保结果可重现
+    srand(0); // Use a fixed seed for reproducible results
 
-    // 生成data数组 (SLOT_L * MY_PQ_M 个 uint8_t)
+    // Generate the data array (SLOT_L * MY_PQ_M uint8_t values)
     for (int i = 0; i < SLOT_L * MY_PQ_M; i++) {
-        data[i] = (uint8_t)(rand() % 256); // 生成0-255的随机字节
+        data[i] = (uint8_t)(rand() % 256); // Random bytes in the range 0-255
     }
 
-    // 生成data_id数组 (SLOT_L 个 int64_t)
+    // Generate the data_id array (SLOT_L int64_t values)
     for (int i = 0; i < SLOT_L; i++) {
-        data_id[i] = (int64_t)i; // 可以用连续ID或随机ID
-        // 或者使用随机ID: data_id[i] = (int64_t)(rand() % 1000000);
+        data_id[i] = (int64_t)i; // Use sequential IDs
+        // Alternatively, use random IDs: data_id[i] = (int64_t)(rand() % 1000000);
     }
 
-    // 生成LUT查找表 (MY_PQ_M * MY_PQ_CLUSTER 个 int32_t)
+    // Generate the LUT (MY_PQ_M * MY_PQ_CLUSTER int32_t values)
     for (int i = 0; i < MY_PQ_M * MY_PQ_CLUSTER; i++) {
-        // LUT通常包含距离值，这里生成一些测试用的距离
-        LUT[i] = (int32_t)(rand() % 1000); // 生成0-999的随机距离
+        // Generate synthetic distance values for the LUT
+        LUT[i] = (int32_t)(rand() % 1000); // Random distances in the range 0-999
     }
 
     printf("Test file created:\n");
@@ -238,52 +238,52 @@ void create_test_file()
     printf("  - LUT: %d entries\n", MY_PQ_M * MY_PQ_CLUSTER);
 }
 
-// PQ算法计算函数
+// Compute PQ distances
 void pq_search()
 {
-    // 初始化结果数组
+    // Initialize result arrays
     for (int i = 0; i < MAX_K; i++) {
-        result_v[i] = INT32_MAX; // 初始化为最大距离
-        result_id[i] = -1; // 初始化为无效ID
+        result_v[i] = INT32_MAX; // Initialize to the maximum distance
+        result_id[i] = -1; // Initialize to an invalid ID
     }
 
-    // 对每个数据向量计算距离
+    // Compute the distance for each data vector
     for (int i = 0; i < SLOT_L; i++) {
         int32_t total_distance = 0;
 
-        // 计算PQ距离：对每个子空间查表并累加
+        // Sum LUT entries across PQ subspaces
         for (int m = 0; m < MY_PQ_M; m++) {
-            // 获取当前向量在当前子空间的编码值
+            // Read the code for the current vector and subspace
             uint8_t code = data[i * MY_PQ_M + m];
-            // 查表获取距离值
+            // Look up the distance
             total_distance += LUT[m * MY_PQ_CLUSTER + code];
         }
 
-        part_dis[i] = total_distance; // 保存部分距离用于调试
+        part_dis[i] = total_distance; // Store partial distances for debugging
 
-        // 维护前K个最小距离（最小堆或插入排序）
-        // 这里使用简单的插入排序方法
+        // Maintain the K smallest distances
+        // Use insertion sort
         if (total_distance < result_v[MAX_K - 1]) {
-            // 找到插入位置
+            // Find the insertion position
             int insert_pos = MAX_K - 1;
             while (insert_pos > 0 && total_distance < result_v[insert_pos - 1]) {
                 insert_pos--;
             }
 
-            // 向后移动元素
+            // Shift entries backward
             for (int j = MAX_K - 1; j > insert_pos; j--) {
                 result_v[j] = result_v[j - 1];
                 result_id[j] = result_id[j - 1];
             }
 
-            // 插入新结果
+            // Insert the new result
             result_v[insert_pos] = total_distance;
             result_id[insert_pos] = data_id[i];
         }
     }
 }
 
-// 打印结果
+// Print results
 void print_results()
 {
     printf("\nPQ Search Results (Top %d):\n", MAX_K);
@@ -322,24 +322,24 @@ void read_test_files()
         exit(EXIT_FAILURE);
     }
 
-    analyze_lut(LUT); // 进行整体 + 分组统计分析
+    analyze_lut(LUT); // Compute overall and per-group statistics
 }
 
-// 主函数
+// Prepare input data and compute CPU reference results
 void prepare()
 {
     printf("=== PQ Algorithm Test ===\n");
 
-    // 第一步：生成测试数据
+    // Step 1: generate test data
     // create_test_file();
 
     read_test_files();
 
-    // 第二步：执行PQ算法计算
+    // Step 2: compute PQ distances
     printf("\nRunning PQ search algorithm...\n");
     pq_search();
 
-    // 第三步：打印结果
+    // Step 3: print results
     print_results();
 }
 
@@ -360,15 +360,15 @@ uint8_t *rearranged_data_flat = NULL;
 uint8_t ***rearranged_data = NULL;
 void allo_rearranged_data()
 {
-    // 分配单块连续内存
+    // Allocate one contiguous block
     size_t total_size = SEG_NUM * SLOT_L * (MY_PQ_M / SEG_NUM);
     rearranged_data_flat = (uint8_t *)malloc(total_size * sizeof(uint8_t));
     if (!rearranged_data_flat) {
-        // 错误处理
+        // Handle allocation failure
         return;
     }
 
-    // 分配指针数组来维护三维结构
+    // Allocate pointer arrays for the three-dimensional layout
     rearranged_data = (uint8_t ***)malloc(SEG_NUM * sizeof(uint8_t **));
     if (!rearranged_data) {
         free(rearranged_data_flat);
@@ -378,7 +378,7 @@ void allo_rearranged_data()
     for (int i = 0; i < SEG_NUM; i++) {
         rearranged_data[i] = (uint8_t **)malloc(SLOT_L * sizeof(uint8_t *));
         if (!rearranged_data[i]) {
-            // 错误处理，需要释放已分配的内存
+            // Release allocated memory on failure
             return;
         }
 
@@ -434,21 +434,21 @@ int main()
         DPU_ASSERT(dpu_copy_from(dpu, XSTR(cycles), 0, &cycles, sizeof(uint64_t)));
         DPU_ASSERT(dpu_copy_from(dpu, XSTR(part_dis), 0, read_part_dis, SLOT_L * sizeof(int32_t)));
     }
-    // 打印part_dis和read_part_dis前10个用于调试
+    // Print the first two partial distances for debugging
     printf("\nPart_dis (first 2 entries):\n");
     for (int i = 0; i < 2; i++) {
         printf("part_dis[%d] = %d, read_part_dis[%d] = %d\n", i, part_dis[i], i, read_part_dis[i]);
     }
 
-    // 对result_v和result_id进行排序
+    // Sort result_v and result_id together
     for (int i = 0; i < MAX_K - 1; i++) {
         for (int j = i + 1; j < MAX_K; j++) {
             if (read_result_v[i] > read_result_v[j]) {
-                // 交换距离
+                // Swap distances
                 int32_t temp_v = read_result_v[i];
                 read_result_v[i] = read_result_v[j];
                 read_result_v[j] = temp_v;
-                // 交换对应的ID
+                // Swap the corresponding IDs
                 int64_t temp_id = read_result_id[i];
                 read_result_id[i] = read_result_id[j];
                 read_result_id[j] = temp_id;
@@ -466,7 +466,7 @@ int main()
             read_result_v[i]);
     }
 
-    // 如果id重叠5个就pass
+    // Pass if at least five IDs overlap
     int match_count = 0;
     for (int i = 0; i < MAX_K; i++) {
         for (int j = 0; j < MAX_K; j++) {
@@ -476,7 +476,7 @@ int main()
             }
         }
     }
-    // 高亮显示
+    // Highlight the result
     if (match_count >= 5) {
         printf("\033[0;32mTest PASSED! (%d/%d matches), DPU time: %.2f ms\033[0m\n", match_count, MAX_K, dputime_ms);
     } else {

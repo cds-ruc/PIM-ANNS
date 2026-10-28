@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import re
 
-# 配置参数
+# Configuration
 slot_values = [50000, 100000, 150000, 200000, 250000]
 base_dir_pattern = "SLOT_L_{}_SPACE1B20M4096_DIR"
 dpu_file_pattern = "/DPU_DIR/dpu-time-nprobe{}.txt"
@@ -10,10 +10,10 @@ dpu_file_pattern = "/DPU_DIR/dpu-time-nprobe{}.txt"
 nprobes = [4, 5, 8, 10, 21, 71]
 recall_map = {4:0.84, 5:0.86, 8:0.88, 10:0.9, 21:0.92, 71:0.94}
 
-# 存储所有数据
+# Collect all records
 all_data = []
 
-# 遍历所有目录和文件
+# Iterate over directories and files
 for slot in slot_values:
     dir_path = base_dir_pattern.format(slot)
     
@@ -25,7 +25,7 @@ for slot in slot_values:
                 with open(file_path, 'r') as f:
                     content = f.read()
                     
-                    # 提取关键指标
+                    # Extract key metrics
                     qps = float(re.search(r'qps=([\d.]+)', content).group(1))
                     active_rate = float(re.search(r'avg_active_rate=([\d.]+)', content).group(1))
                     latency = float(re.search(r'latency=([\d.]+)', content).group(1))
@@ -45,24 +45,24 @@ for slot in slot_values:
                     })
                     
             except Exception as e:
-                print(f"处理文件 {file_path} 出错: {str(e)}")
+                print(f"Error processing {file_path}: {str(e)}")
         else:
-            print(f"文件不存在: {file_path}")
+            print(f"File not found: {file_path}")
 
-# 转换为DataFrame
+# Convert to a DataFrame
 if all_data:
     df = pd.DataFrame(all_data)
     
-    # 按slot大小和nprobe排序
+    # Sort by slot size and nprobe
     df = df.sort_values(by=['slot_size', 'nprobe'])
     
-    # 保存结果
+    # Save results
     output_file = "slot_performance_data.csv"
     df.to_csv(output_file, index=False)
-    print(f"数据已保存到 {output_file}")
+    print(f"Data saved to {output_file}")
     
-    # 显示前5行
-    print("\n抽取的数据样例:")
+    # Display the first five rows
+    print("\nExtracted data sample:")
     print(df.head())
 else:
-    print("未找到任何有效数据")
+    print("No valid data found")

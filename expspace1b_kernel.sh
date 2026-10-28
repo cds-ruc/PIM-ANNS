@@ -75,7 +75,7 @@ files=(
     # "dpu_kernel_baseline_haveprune.c"
 )
 
-# 公共路径
+# Shared paths
 base_dir="/home/wupuqing/workspace/PIM-ANNS/dpu"
 
 
@@ -98,18 +98,18 @@ for m0 in "${macro0_values[@]}"; do
                 -e "s/#define QUERY_TYPE.*/#define QUERY_TYPE 1/" \
                 $path_common
             
-            # 循环：依次将每个文件复制为 dpu_kernel.c
+            # Copy each kernel variant to dpu_kernel.c in turn
             for file in "${files[@]}"; do
                 echo "Copying $file to dpu_kernel.c..."
                 cp "$base_dir/$file" "$base_dir/dpu_kernel.c"
 
             
 
-                # Step 1: 修改 config.json 中的 RESULT_DIR
+                # Step 1: update RESULT_DIR in config.json
                 jq ".RESULT_DIR = \"${file}_SPACE1B20M4096_DIR\"" ../config.json > ../tmp.json \
                     && mv ../tmp.json ../config.json
 
-                # Step 2: 提取新目录路径并创建目录
+                # Step 2: extract the output directory path and create it
                 new_dir=$(grep -oP '"RESULT_DIR": "\K[^"]+' ../config.json)
                 if [ ! -d "../$new_dir" ]; then
                     mkdir -p "../$new_dir"

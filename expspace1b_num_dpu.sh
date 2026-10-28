@@ -95,16 +95,16 @@ for m0 in "${macro0_values[@]}"; do
             
 
             for num_dpu in "${num_dpu_values[@]}"; do
-                # 1. 修改宏定义
+                # 1. Update macro definitions
                 sed -i \
                     -e "s|#define NR_DPU.*|#define NR_DPU ${num_dpu}|" \
                     $path_common
 
-                # Step 1: 修改 config.json 中的 RESULT_DIR
+                # Step 1: update RESULT_DIR in config.json
                 jq ".RESULT_DIR = \"NR_DPU_${num_dpu}_SPACE1B20M4096_DIR\"" ../config.json > ../tmp.json \
                     && mv ../tmp.json ../config.json
 
-                # Step 2: 提取新目录路径并创建目录
+                # Step 2: extract the output directory path and create it
                 new_dir=$(grep -oP '"RESULT_DIR": "\K[^"]+' ../config.json)
                 if [ ! -d "../$new_dir" ]; then
                     mkdir -p "../$new_dir"

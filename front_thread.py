@@ -4,9 +4,9 @@ import os
 import re
 import numpy as np
 
-# ==================== 数据抽取函数 ====================
+# ==================== Data extraction ====================
 def extract_data():
-    """从目录结构中提取性能数据"""
+    """Extract performance data from the directory layout."""
     thread_counts = [5, 10, 15, 20, 25, 30, 35, 40]
     base_dir_pattern = "FRONT_THREAD_{}_SPACE1B20M4096_DIR"
     dpu_file_pattern = "/DPU_DIR/dpu-time-nprobe{}.txt"
@@ -27,7 +27,7 @@ def extract_data():
                     with open(file_path, 'r') as f:
                         content = f.read()
                         
-                        # 提取所有指标（带错误处理）
+                        # Extract all metrics with error handling
                         data = {
                             'thread_count': thread,
                             'nprobe': nprobe,
@@ -41,28 +41,28 @@ def extract_data():
                         all_data.append(data)
                         
                 except Exception as e:
-                    print(f"处理文件 {file_path} 出错: {str(e)}")
+                    print(f"Error processing {file_path}: {str(e)}")
                     all_data.append({
                         'thread_count': thread,
                         'nprobe': nprobe,
                         'recall': recall_map.get(nprobe, 0)
                     })
             else:
-                print(f"文件不存在: {file_path}")
+                print(f"File not found: {file_path}")
     
     df = pd.DataFrame(all_data)
     
-    # 数据验证
-    print("\n数据列检查:")
+    # Validate the data
+    print("\nData columns:")
     print(df.columns.tolist())
-    print("\n前5行数据样例:")
+    print("\nFirst five rows:")
     print(df.head())
     
     df.to_csv("thread_performance.csv", index=False)
     return df
 
 def extract_metric(content, metric_name):
-    """安全提取指标值"""
+    """Extract a metric value safely."""
     try:
         match = re.search(rf'{metric_name}=([\d.]+)', content)
         return float(match.group(1)) if match else np.nan
@@ -70,9 +70,9 @@ def extract_metric(content, metric_name):
         return np.nan
 
 
-# ==================== 主程序 ====================
+# ==================== Main program ====================
 if __name__ == "__main__":
-    print("=== 开始线程数性能分析 ===")
+    print("=== Thread Count Performance Analysis ===")
     
     df = extract_data()
     

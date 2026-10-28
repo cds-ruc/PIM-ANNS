@@ -4,9 +4,9 @@ import os
 import re
 import numpy as np
 
-# ==================== 数据抽取函数 ====================
+# ==================== Data extraction ====================
 def extract_data():
-    """从目录结构中提取性能数据"""
+    """Extract performance data from the directory layout."""
     dpu_counts = [1280, 1600, 1920, 2240, 2558]
     base_dir_pattern = "NR_DPU_{}_SPACE1B20M4096_DIR"
     dpu_file_pattern = "/DPU_DIR/dpu-time-nprobe{}.txt"
@@ -27,7 +27,7 @@ def extract_data():
                     with open(file_path, 'r') as f:
                         content = f.read()
                         
-                        # 提取所有指标
+                        # Extract all metrics
                         data = {
                             'dpu_count': dpu_count,
                             'nprobe': nprobe,
@@ -41,16 +41,16 @@ def extract_data():
                         all_data.append(data)
                         
                 except Exception as e:
-                    print(f"处理文件 {file_path} 出错: {str(e)}")
-                    # 添加基础数据占位
+                    print(f"Error processing {file_path}: {str(e)}")
+                    # Add a placeholder record
                     all_data.append({
                         'dpu_count': dpu_count,
                         'nprobe': nprobe,
                         'recall': recall_map.get(nprobe, 0)
                     })
             else:
-                print(f"文件不存在: {file_path}")
-                # 为缺失文件添加占位数据
+                print(f"File not found: {file_path}")
+                # Add placeholder records for missing files
                 all_data.append({
                     'dpu_count': dpu_count,
                     'nprobe': nprobe,
@@ -59,19 +59,19 @@ def extract_data():
     
     df = pd.DataFrame(all_data)
     
-    # 数据验证
-    print("\n数据列检查:")
+    # Validate the data
+    print("\nData columns:")
     print(df.columns.tolist())
-    print("\n数据统计:")
-    print(f"总记录数: {len(df)}")
-    print(f"DPU数量: {sorted(df['dpu_count'].unique())}")
-    print(f"nprobe值: {sorted(df['nprobe'].unique())}")
+    print("\nData statistics:")
+    print(f"Total records: {len(df)}")
+    print(f"DPU counts: {sorted(df['dpu_count'].unique())}")
+    print(f"nprobe values: {sorted(df['nprobe'].unique())}")
     
     df.to_csv("dpu_performance.csv", index=False)
     return df
 
 def extract_metric(content, metric_name):
-    """安全提取指标值"""
+    """Extract a metric value safely."""
     try:
         match = re.search(rf'{metric_name}=([\d.]+)', content)
         return float(match.group(1)) if match else np.nan
@@ -80,10 +80,10 @@ def extract_metric(content, metric_name):
 
 
 
-# ==================== 主程序 ====================
+# ==================== Main program ====================
 if __name__ == "__main__":
-    print("=== 开始DPU数量性能分析 ===")
-    print("DPU数量: [1280, 1600, 1920, 2240, 2558]")
+    print("=== DPU Count Performance Analysis ===")
+    print("DPU counts: [1280, 1600, 1920, 2240, 2558]")
     
   
     df = extract_data()

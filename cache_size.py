@@ -4,9 +4,9 @@ import os
 import re
 import numpy as np
 
-# ==================== 数据抽取函数 ====================
+# ==================== Data extraction ====================
 def extract_data():
-    """从目录结构中提取性能数据"""
+    """Extract performance data from the directory layout."""
     cache_sizes = [2,4,6, 8, 10,12, 16, 20]
     base_dir_pattern = "CACHE_SIZE_{}_SPACE1B20M4096_DIR"
     dpu_file_pattern = "/DPU_DIR/dpu-time-nprobe{}.txt"
@@ -27,7 +27,7 @@ def extract_data():
                     with open(file_path, 'r') as f:
                         content = f.read()
                         
-                        # 提取所有指标
+                        # Extract all metrics
                         data = {
                             'cache_size': cache_size,
                             'nprobe': nprobe,
@@ -41,16 +41,16 @@ def extract_data():
                         all_data.append(data)
                         
                 except Exception as e:
-                    print(f"处理文件 {file_path} 出错: {str(e)}")
-                    # 添加基础数据占位
+                    print(f"Error processing {file_path}: {str(e)}")
+                    # Add a placeholder record
                     all_data.append({
                         'cache_size': cache_size,
                         'nprobe': nprobe,
                         'recall': recall_map.get(nprobe, 0)
                     })
             else:
-                print(f"文件不存在: {file_path}")
-                # 为缺失文件添加占位数据
+                print(f"File not found: {file_path}")
+                # Add placeholder records for missing files
                 all_data.append({
                     'cache_size': cache_size,
                     'nprobe': nprobe,
@@ -59,38 +59,38 @@ def extract_data():
     
     df = pd.DataFrame(all_data)
     
-    # 数据验证
-    print("\n数据列检查:")
+    # Validate the data
+    print("\nData columns:")
     print(df.columns.tolist())
-    print("\n数据统计:")
-    print(f"总记录数: {len(df)}")
-    print(f"缓存大小配置: {sorted(df['cache_size'].unique())}")
-    print(f"nprobe值: {sorted(df['nprobe'].unique())}")
+    print("\nData statistics:")
+    print(f"Total records: {len(df)}")
+    print(f"Cache sizes: {sorted(df['cache_size'].unique())}")
+    print(f"nprobe values: {sorted(df['nprobe'].unique())}")
     
     df.to_csv("cache_performance.csv", index=False)
     return df
 
 def extract_metric(content, metric_name):
-    """安全提取指标值"""
+    """Extract a metric value safely."""
     try:
         match = re.search(rf'{metric_name}=([\d.]+)', content)
         return float(match.group(1)) if match else np.nan
     except:
         return np.nan
 
-# ==================== 数据分析函数 ====================
+# ==================== Data analysis ====================
 def analyze_data(df):
-    """缓存大小对性能影响分析"""
-    # 检查数据完整性
+    """Analyze the effect of cache size on performance."""
+    # Check data completeness
     required_cols = ['cache_size', 'nprobe', 'recall', 'qps', 'latency', 'latency_tail', 'active_rate']
     missing_cols = [col for col in required_cols if col not in df.columns]
     
     if missing_cols:
-        print(f"\n错误: 缺少必要列 {missing_cols}")
-        print("可用列:", df.columns.tolist())
+        print(f"\nError: missing required columns {missing_cols}")
+        print("Available columns:", df.columns.tolist())
         return
     
-    # 设置绘图样式
+    # Configure plot styling
     plt.style.use('ggplot')
     plt.rcParams.update({
         'font.sans-serif': 'SimHei',
@@ -101,25 +101,25 @@ def analyze_data(df):
         'grid.alpha': 0.6
     })
     
-    # 创建分析图表
+    # Create analysis plots
     fig, axes = plt.subplots(2, 2, figsize=(18, 12))
-    fig.suptitle('不同缓存大小和召回率下的性能指标分析', y=1.02)
+    fig.suptitle('Performance by Cache Size and Recall', y=1.02)
     
-    # 指标配置
+    # Metric configuration
     metrics = [
-        ('qps', '查询吞吐量(QPS)', 'linear'),
-        ('latency', '延迟(ms)', 'linear'),
-        ('latency_tail', '尾部延迟(ms)', 'linear'), 
-        ('active_rate', '平均激活率', 'linear')
+        ('qps', 'Query throughput (QPS)', 'linear'),
+        ('latency', 'Latency (ms)', 'linear'),
+        ('latency_tail', 'Tail latency (ms)', 'linear'),
+        ('active_rate', 'Mean active rate', 'linear')
     ]
     
-    # 颜色方案
+    # Color scheme
     colors = [
         '#1f77b4', '#ff7f0e', '#2ca02c', 
         '#d62728', '#9467bd', '#8c564b'
     ]
     
-    # 绘制每个指标
+    # Plot each metric
     for idx, (metric, name, scale) in enumerate(metrics):
         ax = axes[idx//2, idx%2]
         
@@ -131,7 +131,7 @@ def analyze_data(df):
             recall = subset['recall'].iloc[0]
             color = colors[i % len(colors)]
             
-            # 主曲线
+            # Main curves
             ax.plot(
                 subset['cache_size'],
                 subset[metric],
@@ -143,7 +143,7 @@ def analyze_data(df):
                 label=f'R@{recall:.2f} (n={nprobe})'
             )
             
-            # 数据标签
+            # Data labels
             for x, y in zip(subset['cache_size'], subset[metric]):
                 if not np.isnan(y):
                     ax.text(
@@ -155,36 +155,36 @@ def analyze_data(df):
                     )
         
         ax.set_title(name)
-        ax.set_xlabel('缓存大小')
+        ax.set_xlabel('Cache size')
         ax.set_ylabel(name)
         ax.set_xticks(sorted(df['cache_size'].unique()))
     
-    # 图例和布局
+    # Legend and layout
     handles, labels = axes[0,0].get_legend_handles_labels()
     fig.legend(
         handles,
         labels,
         loc='upper right',
         bbox_to_anchor=(1.15, 0.9),
-        title='召回率 & nprobe值'
+        title='Recall & nprobe'
     )
     
     plt.tight_layout()
     
-    # 保存结果
+    # Save results
     os.makedirs("analysis_results", exist_ok=True)
     output_path = os.path.join("analysis_results", "cache_performance_analysis.png")
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    print(f"\n分析结果已保存至: {output_path}")
+    print(f"\nAnalysis saved to: {output_path}")
     plt.show()
 
-# ==================== 扩展分析函数 ====================
+# ==================== Extended analysis ====================
 def additional_analysis(df):
-    """缓存性能的深度分析"""
-    print("\n=== 缓存性能深度分析 ===")
+    """Analyze cache performance in more detail."""
+    print("\n=== Cache Performance Analysis ===")
     
-    # 1. 各缓存大小的平均性能统计
-    print("\n1. 各缓存大小的平均性能:")
+    # 1. Mean performance for each cache size
+    print("\n1. Mean performance by cache size:")
     cache_stats = df.groupby('cache_size').agg({
         'qps': ['mean', 'std', 'max'],
         'latency': ['mean', 'std', 'min'],
@@ -192,8 +192,8 @@ def additional_analysis(df):
     }).round(2)
     print(cache_stats)
     
-    # 2. 缓存效率分析（性能提升百分比）
-    print("\n2. 缓存大小增加的性能提升分析:")
+    # 2. Cache efficiency: percentage improvement
+    print("\n2. Performance improvement with increasing cache size:")
     cache_sizes = sorted(df['cache_size'].unique())
     for i in range(1, len(cache_sizes)):
         prev_size = cache_sizes[i-1]
@@ -206,25 +206,25 @@ def additional_analysis(df):
             qps_improvement = ((curr_data['qps'].mean() - prev_data['qps'].mean()) / prev_data['qps'].mean()) * 100
             latency_improvement = ((prev_data['latency'].mean() - curr_data['latency'].mean()) / prev_data['latency'].mean()) * 100
             
-            print(f"从 {prev_size} 到 {curr_size}:")
-            print(f"  QPS提升: {qps_improvement:.2f}%")
-            print(f"  延迟降低: {latency_improvement:.2f}%")
+            print(f"From {prev_size} to {curr_size}:")
+            print(f"  QPS improvement: {qps_improvement:.2f}%")
+            print(f"  Latency reduction: {latency_improvement:.2f}%")
     
-    # 3. 创建缓存效率分析图
+    # 3. Create the cache efficiency plot
     plt.figure(figsize=(12, 8))
     
-    # 计算每个缓存大小的平均QPS
+    # Compute mean QPS for each cache size
     avg_qps_by_cache = df.groupby('cache_size')['qps'].mean()
     plt.plot(avg_qps_by_cache.index, avg_qps_by_cache.values, 
              marker='o', linewidth=3, markersize=10, color='#2ca02c')
     
-    plt.title('缓存大小对平均QPS的影响')
-    plt.xlabel('缓存大小')
-    plt.ylabel('平均QPS')
+    plt.title('Effect of Cache Size on Mean QPS')
+    plt.xlabel('Cache size')
+    plt.ylabel('Mean QPS')
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.xticks(sorted(df['cache_size'].unique()))
     
-    # 添加性能提升标注
+    # Annotate performance improvements
     for i in range(1, len(avg_qps_by_cache)):
         prev_val = avg_qps_by_cache.iloc[i-1]
         curr_val = avg_qps_by_cache.iloc[i]
@@ -242,28 +242,28 @@ def additional_analysis(df):
     plt.tight_layout()
     efficiency_path = os.path.join("analysis_results", "cache_efficiency_analysis.png")
     plt.savefig(efficiency_path, dpi=300, bbox_inches='tight')
-    print(f"\n缓存效率分析图已保存至: {efficiency_path}")
+    print(f"\nCache efficiency plot saved to: {efficiency_path}")
 
-# ==================== 主程序 ====================
+# ==================== Main program ====================
 if __name__ == "__main__":
-    print("=== 开始缓存大小性能分析 ===")
+    print("=== Cache Size Performance Analysis ===")
     
-    # 数据加载或提取
+    # Load or extract data
     try:
         df = pd.read_csv("cache_performance.csv")
-        print("\n使用现有数据文件进行分析...")
+        print("\nAnalyzing the existing data file...")
     except FileNotFoundError:
-        print("\n未找到数据文件，开始抽取数据...")
+        print("\nData file not found; extracting data...")
         df = extract_data()
     
-    # 执行分析
+    # Run the analysis
     if df is not None and not df.empty:
-        print("\n数据摘要:")
-        print(f"有效数据记录: {len(df)}")
-        print(f"缓存大小配置: {sorted(df['cache_size'].unique())}")
-        print(f"nprobe配置数量: {len(df['nprobe'].unique())}")
+        print("\nData summary:")
+        print(f"Valid records: {len(df)}")
+        print(f"Cache sizes: {sorted(df['cache_size'].unique())}")
+        print(f"Number of nprobe configurations: {len(df['nprobe'].unique())}")
         
         analyze_data(df)
         additional_analysis(df)
     else:
-        print("\n错误: 没有有效数据可供分析")
+        print("\nError: no valid data available for analysis")

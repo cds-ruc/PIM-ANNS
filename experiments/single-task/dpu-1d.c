@@ -226,7 +226,7 @@ BARRIER_INIT(barrier, NR_TASKLETS);
 __mram DATA_TYPE data[SEG_NUM * SLOT_L * (MY_PQ_M / SEG_NUM)];
 __mram ID_TYPE data_id[SLOT_L];
 
-__mram DIST_TYPE part_dis[SLOT_L]; // 存储分段距离
+__mram DIST_TYPE part_dis[SLOT_L]; // Accumulate partial distances per vector
 
 __mram DIST_TYPE LUT[MY_PQ_M * MY_PQ_CLUSTER];
 
@@ -246,12 +246,12 @@ __host ID_TYPE result_id[MAX_K];
 
 __host DIST_TYPE best_value = 6000;
 
-//先计算一部分，得到best_value，
+// Precompute a subset to obtain best_value
 
 void task_perf()
 {
 
-    int t_id = me(); // 当前线程ID (0 ≤ t_id < NR_TASKLETS)
+    int t_id = me(); // Current tasklet ID (0 <= t_id < NR_TASKLETS)
 
     DIST_TYPE *local_dis = &local_dis_all[t_id * MAX_K];
     ID_TYPE *local_id = &local_id_all[t_id * MAX_K];
@@ -262,22 +262,22 @@ void task_perf()
     }
     barrier_wait(&barrier);
 
-    /* ========== 阶段1：分段计算部分距离 ========== */
+    /* ========== Stage 1: compute partial distances by segment ========== */
     int totallen = SLOT_L;
 
     int chunk_size = totallen / NR_TASKLETS;
-    chunk_size = (chunk_size + 7) & ~7; // 对齐到8的倍数
+    chunk_size = (chunk_size + 7) & ~7; // Align to a multiple of 8
 
     int start = t_id * chunk_size;
     if (t_id == NR_TASKLETS - 1) {
-        chunk_size = totallen - start; // 最后一个线程处理剩余数据
+        chunk_size = totallen - start; // The last tasklet processes the remaining vectors
     }
 
     barrier_wait(&barrier);
 
     for (int seg = 0; seg < SEG_NUM; seg++) {
-        int seg_len = MY_PQ_M / SEG_NUM; // 当前段的维度数
-        int lut_start = seg * seg_len; // 当前段在LUT中的起始位置
+        int seg_len = MY_PQ_M / SEG_NUM; // Number of PQ subspaces in this segment
+        int lut_start = seg * seg_len; // Starting LUT subspace for this segment
 
         if (t_id == 0) {
             for (int l = 0; l < seg_len; l++) {
@@ -333,10 +333,10 @@ void task_perf()
 
     barrier_wait(&barrier);
 
-    /* ========== 结果合并与输出 ========== */
+    /* ========== Merge and output results ========== */
     barrier_wait(&barrier);
     if (t_id == 0) {
-        // 合并所有线程的局部堆
+        // Merge the local heaps from all tasklets
         for (int i = 0; i < NR_TASKLETS; i++) {
             for (int j = 0; j < MAX_K; j++) {
                 if (local_dis_all[i * MAX_K + j] < result_v[0]) {

@@ -279,7 +279,7 @@ __host DPU_INFO_COMMON dpu_info_common;
 __mram volatile DATA_TYPE data[SLOT_NUM * SLOT_L * MY_PQ_M + 1000];
 __mram volatile ID_TYPE data_id[SLOT_NUM * SLOT_L + 1000];
 
-__mram DIST_TYPE part_dis[SLOT_L + 1000]; // 存储分段距离
+__mram DIST_TYPE part_dis[SLOT_L + 1000]; // Accumulate partial distances per vector
 
 #define INDEX_DATA(i, j, k) ((i) * (SLOT_L) * (MY_PQ_M) + (j) * (MY_PQ_M) + (k))
 #define INDEX_ID(i, j) ((i) * (SLOT_L) + (j))
@@ -332,10 +332,10 @@ void delay(int ms) {
 
 void task_perf() {
  
-  int t_id = me(); // 当前线程ID (0 ≤ t_id < NR_TASKLETS)
+  int t_id = me(); // Current tasklet ID (0 <= t_id < NR_TASKLETS)
   perfcounter_cycles cycles;
 
-  // 初始化局部堆
+  // Initialize the local heap
   int slot_id = query.slot_id;
   DIST_TYPE *local_dis = &local_dis_all[t_id * MAX_K];
   ID_TYPE *local_id = &local_id_all[t_id * MAX_K];
@@ -347,14 +347,14 @@ void task_perf() {
   }
   barrier_wait(&barrier);
 
-  /* ========== 阶段1：分段计算部分距离 ========== */
-  int totallen = query.shard_l; // 总向量数
+  /* ========== Stage 1: compute partial distances by segment ========== */
+  int totallen = query.shard_l; // Total number of vectors
   int chunk_size = totallen / NR_TASKLETS;
-  chunk_size = (chunk_size + 7) & ~7; // 对齐到8的倍数
+  chunk_size = (chunk_size + 7) & ~7; // Align to a multiple of 8
 
   int start = t_id * chunk_size;
   if (t_id == NR_TASKLETS - 1) {
-    chunk_size = totallen - start; // 最后一个线程处理剩余数据
+    chunk_size = totallen - start; // The last tasklet processes the remaining vectors
   }
 
   if (t_id == 0) {
@@ -363,8 +363,8 @@ void task_perf() {
   barrier_wait(&barrier);
 
   for (int seg = 0; seg < SEG_NUM; seg++) {
-    int seg_len = MY_PQ_M / SEG_NUM; // 当前段的维度数
-    int lut_start = seg * seg_len;   // 当前段在LUT中的起始位置
+    int seg_len = MY_PQ_M / SEG_NUM; // Number of PQ subspaces in this segment
+    int lut_start = seg * seg_len;   // Starting LUT subspace for this segment
 
     if (t_id == 0) {
       for (int l = 0; l < seg_len; l++) {
@@ -410,16 +410,16 @@ void task_perf() {
 
   barrier_wait(&barrier);
 
-  /* ========== 阶段2：合并部分距离并堆排序 ========== */
+  /* ========== Stage 2: combine partial distances and maintain the heap ========== */
 
   for (int i = start; i < start + chunk_size; i++) {
 
-    DIST_TYPE sum = query.dis0 + part_dis[i]; // 加上初始距离和所有段的部分距离
+    DIST_TYPE sum = query.dis0 + part_dis[i]; // Add the initial distance and the partial distances from all segments
 
-    // 加载当前向量的ID
+    // Load the current vector ID
     ID_TYPE id = data_id[INDEX_ID(slot_id, i)];
 
-    // 维护局部Top-K堆
+    // Maintain the local Top-K heap
     if (local_dis[0] > sum) {
       heap_replace_top1(query.k, local_dis, local_id, sum, id);
     }
@@ -430,10 +430,10 @@ void task_perf() {
   if (t_id == 0) {
     memset(part_dis, 0, sizeof(DIST_TYPE) * (SLOT_L + 1000));
   }
-  /* ========== 结果合并与输出 ========== */
+  /* ========== Merge and output results ========== */
   barrier_wait(&barrier);
   if (t_id == 0) {
-    // 合并所有线程的局部堆
+    // Merge the local heaps from all tasklets
     for (int i = 0; i < NR_TASKLETS; i++) {
       for (int j = 0; j < query.k; j++) {
         if (local_dis_all[i * MAX_K + j] < result.result_v[0]) {
@@ -444,11 +444,11 @@ void task_perf() {
       }
     }
 
-    // 记录性能数据
+    // Record performance measurements
     result.cycles = timer_stop(&cycles);
     result.cycle_per_vec = result.cycles / query.shard_l;
 
-    // 填充结果元数据
+    // Populate result metadata
     result.k = query.k;
     result.q_id = query.q_id;
     result.c_id = query.c_id;

@@ -13,7 +13,7 @@
 
 
 
-//修改M参数
+// M parameter
 #define MY_PQ_M 100
 
 #define DATA_FILE "/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/data_M100.bin"
@@ -22,24 +22,24 @@
 
 
 
-//修改K参数
+// K parameter
 #define MAX_K 10
 #define K_DPU MAX_K
 #define K_TASKLET 3
 
 
-//修改PRE_COMPUTE参数
+// PRE_COMPUTE parameter
 #define PRE_COMPUTE 300
 
-// 修改CHECK_SIZE参数
+// CHECK_SIZE parameter
 #define CHECK_SIZE 4
 
 
 
-//修改DSIZE参数
+// DSIZE parameter
 #define DSIZE 8
 
-// 修改LUT_SIZE参数
+// LUT_SIZE parameter
 #define LUT_SIZE 20
 #define SEG_NUM (MY_PQ_M / LUT_SIZE)
 

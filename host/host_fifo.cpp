@@ -428,18 +428,18 @@ void DPUWrapper::init_balance(int nprobe, int top_k) {
   }
 
   /*----begin---*/
-  // 这段代码使用query_path的查询数据计算每个batch的平均聚类长度
-  // 注意：这里使用新的查询数据和新的搜索结果
+  // Compute the mean cluster length per batch using query_path
+  // Use a separate query buffer and search results
 
-  // 读取query_path的查询数据
+  // Read queries from query_path
   float *new_query_data = read_query(query_path.c_str(), QUERY_TYPE, nq, dim);
   assert(dim == DIM);
 
-  // 为新的查询数据分配空间
+  // Allocate buffers for the additional search
   faiss::idx_t *new_idx = new faiss::idx_t[nq * nprobe];
   float *new_dis = new float[nq * nprobe];
 
-  // 执行新的搜索
+  // Run the additional search
   fifo_index->quantizer->search(nq, new_query_data, nprobe, new_dis, new_idx,
                                 nullptr);
 
@@ -465,7 +465,7 @@ void DPUWrapper::init_balance(int nprobe, int top_k) {
               << std::endl;
   }
 
-  // 释放新分配的内存
+  // Release the additional buffers
   delete[] new_query_data;
   delete[] new_idx;
   delete[] new_dis;
@@ -1056,7 +1056,7 @@ void DPUWrapper::level2_search(coroutine<void>::push_type &sink, int q_id,
 
     string lut_path =
         "/home/wupuqing/workspace/PIM-ANNS/dpu/dpu_demo/input/lut.bin";
-    //   写入文件，只写入一个lut，即query->idx[0]对应的lut
+    // Write the LUT for query->idx[0]
     std::ofstream lut_file(lut_path, std::ios::binary);
     if (lut_file.is_open()) {
       int c_id = query->idx[0];
@@ -1078,7 +1078,7 @@ void DPUWrapper::level2_search(coroutine<void>::push_type &sink, int q_id,
     std::ofstream id_file(id_path, std::ios::binary);
     if (data_file.is_open() && id_file.is_open()) {
       int c_id = query->idx[0];
-      int s_id = 0; // 这里假设我们读取的是第0个shard
+      int s_id = 0; // Use shard 0
       DATA_TYPE *data = getdata(c_id, s_id);
       ID_TYPE *ids = getids(c_id, s_id);
       int align8 = (SLOT_L / 10 + 7) & ~7;
@@ -2707,29 +2707,29 @@ void DPUWrapper::thread_dynamic_balance(const std::vector<int> &cluster_id_v,
         diff_replica[i] = copy_num[i] - before_copy_num[i];
       }
 
-      /*begin: 打印集群和切片副本变化统计信息*/
-      // 在计算diff_replica后添加
+      /* begin: report changes in cluster and shard replica counts */
+      // Report the computed replica differences
       printf("\nCluster replica changes summary:\n");
-      // 打印表头：集群ID | 调整前副本数 | 调整后副本数 | 变化量 |
-      // 调整前切片总数 | 调整后切片总数
+      // Columns: cluster ID, replicas before, replicas after, and difference
+      // Total shard counts before and after adjustment
       printf("%-10s %-10s %-10s %-10s %-15s %-15s\n", "Cluster", "Before",
              "After", "Change", "ShardBefore", "ShardAfter");
 
-      // 遍历所有集群，打印有变化的集群信息
+      // Print clusters whose replica counts changed
       for (int i = 0; i < mconfig.getMaxCluster(); i++) {
-        if (diff_replica[i] != 0) { // 只打印有变化的集群
-          // 计算切片级别的副本数（每个集群副本对应 pair_shard_num*2 个切片）
+        if (diff_replica[i] != 0) { // Print only changed clusters
+          // Compute shard replicas: each cluster replica contains pair_shard_num*2 shards
           int shard_before =
               before_copy_num[i] * cluster_info[i]->pair_shard_num * 2;
           int shard_after = copy_num[i] * cluster_info[i]->pair_shard_num * 2;
 
-          // 打印该集群的副本变化信息
+          // Print the replica changes for this cluster
           printf("%-10d %-10d %-10d %+d %-15d %-15d\n", i, before_copy_num[i],
                  copy_num[i], diff_replica[i], shard_before, shard_after);
         }
       }
 
-      /* 计算并打印集群级别的总副本数变化 */
+      /* Compute and print the change in total cluster replicas */
       int total_before = 0, total_after = 0;
       for (int i = 0; i < mconfig.getMaxCluster(); i++) {
         total_before += before_copy_num[i];
@@ -2738,7 +2738,7 @@ void DPUWrapper::thread_dynamic_balance(const std::vector<int> &cluster_id_v,
       printf("\nTotal cluster replicas: before=%d, after=%d, change=%+d\n",
              total_before, total_after, total_after - total_before);
 
-      /* 计算并打印切片级别的总副本数变化 */
+      /* Compute and print the change in total shard replicas */
       int total_shard_before = 0, total_shard_after = 0;
       for (int i = 0; i < mconfig.getMaxCluster(); i++) {
         total_shard_before +=
@@ -2748,7 +2748,7 @@ void DPUWrapper::thread_dynamic_balance(const std::vector<int> &cluster_id_v,
       printf("Total shard replicas: before=%d, after=%d, change=%+d\n",
              total_shard_before, total_shard_after,
              total_shard_after - total_shard_before);
-      /*end: 打印集群和切片副本变化统计信息*/
+      /* end: report changes in cluster and shard replica counts */
 
       printf("Can remove replica:\n");
       for (int i = 0; i < mconfig.getMaxCluster(); i++) {
@@ -3060,12 +3060,12 @@ void DPUWrapper::thread_dynamic_balance(const std::vector<int> &cluster_id_v,
 
       counter.Record("xfer size when dynamic balance(GB)", total_size_GB);
 
-      // 在调整结束后添加耗时统计
+      // Record the elapsed adjustment time
       auto adjustment_end = std::chrono::system_clock::now();
       auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
           adjustment_end - now);
 
-      // 获取结束时间字符串
+      // Format the completion timestamp
       std::time_t end_time =
           std::chrono::system_clock::to_time_t(adjustment_end);
       std::tm end_tm = *std::localtime(&end_time);
