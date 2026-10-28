@@ -183,7 +183,7 @@ python3 experiments/analysis/cache_size.py
 
 `cache_size.py` reuses its existing CSV when present; the other extractors read experiment logs and may overwrite their CSV outputs. Keep wanted results before rerunning analysis.
 
-See the [single-PU microbenchmark guide](experiments/single-task/README.md) for binary input formats, commands and the missing CHECK_SIZE templates. The `checksum/dpu/*.txt` files are kernel source templates.
+See the [single-PU microbenchmark guide](experiments/single-task/README.md) for binary input formats, commands and parameter requirements. The `checksum/dpu/*.txt` files are kernel source templates.
 
 `AE/exps/exp7.sh` and `exp8.sh` additionally require `REMOTE_HOST`, `REMOTE_USER`, `REMOTE_SCRIPT` and `REMOTE_OUTPUT_DIR` environment variables for their remote GPU comparison. They stop before running experiments if these variables are unset; the GPU scripts are supplied separately on that machine.
 
